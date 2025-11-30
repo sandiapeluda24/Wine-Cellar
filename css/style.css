@@ -1,0 +1,28 @@
+body {
+    font-family: system-ui, sans-serif;
+    margin: 0;
+    background: #f7f3f0;
+}
+
+.navbar {
+    background: #4b1e24;
+    padding: 10px 20px;
+    display: flex;
+    gap: 15px;
+}
+
+.navbar a, .navbar span {
+    color: #f7f3f0;
+    text-decoration: none;
+}
+
+.contenido {
+    padding: 20px;
+}
+
+footer.footer {
+    text-align: center;
+    padding: 10px;
+    background: #eee;
+    margin-top: 40px;
+}
