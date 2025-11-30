@@ -70,6 +70,12 @@ router.put('/:id', (req, res) => {
       return res.status(400).json({ error: 'Bottle ID and start date are required' });
     }
     
+    // Verify bottle exists
+    const bottle = Bottle.findById(bottle_id);
+    if (!bottle) {
+      return res.status(404).json({ error: 'Bottle not found' });
+    }
+    
     const record = AgingRecord.update(req.params.id, {
       bottle_id, start_date, end_date, storage_location, temperature, humidity, notes
     });

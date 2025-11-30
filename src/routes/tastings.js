@@ -86,6 +86,20 @@ router.put('/:id', (req, res) => {
       return res.status(400).json({ error: 'Bottle ID and tasting date are required' });
     }
     
+    // Verify bottle exists
+    const bottle = Bottle.findById(bottle_id);
+    if (!bottle) {
+      return res.status(404).json({ error: 'Bottle not found' });
+    }
+    
+    // Verify sommelier exists if provided
+    if (sommelier_id) {
+      const sommelier = Sommelier.findById(sommelier_id);
+      if (!sommelier) {
+        return res.status(404).json({ error: 'Sommelier not found' });
+      }
+    }
+    
     // Validate rating
     if (overall_rating !== undefined && (overall_rating < 1 || overall_rating > 100)) {
       return res.status(400).json({ error: 'Overall rating must be between 1 and 100' });
