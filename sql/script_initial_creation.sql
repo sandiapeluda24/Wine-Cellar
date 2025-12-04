@@ -13,11 +13,13 @@ CREATE TABLE usuarios (
     id_usuario INT AUTO_INCREMENT PRIMARY KEY,
     nombre      VARCHAR(100) NOT NULL,
     email       VARCHAR(150) NOT NULL UNIQUE,
-    password    VARCHAR(255) NOT NULL,  -- aquí irá el hash con password_hash
+    password    VARCHAR(255) NOT NULL,
     rol         ENUM('admin','coleccionista','sommelier') NOT NULL DEFAULT 'coleccionista',
-    certificado TINYINT(1) NOT NULL DEFAULT 0, -- 1 = certificado, solo para sommeliers
+    certificado TINYINT(1) NOT NULL DEFAULT 0,
+    sommelier_description TEXT NULL,
     created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
+
 
 -- =========================
 -- Tabla: denominaciones

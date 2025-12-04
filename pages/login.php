@@ -9,24 +9,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'] ?? '';
 
     if ($email === '' || $password === '') {
-        $errores[] = "Email y contraseña son obligatorios.";
+        $errores[] = "Email and password are required.";
     } else {
         $db = getDB();
+        // Primero buscar el usuario SIN verificar si está activo
         $stmt = $db->prepare("SELECT * FROM usuarios WHERE email = ?");
         $stmt->execute([$email]);
         $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($usuario && password_verify($password, $usuario['password'])) {
+        if (!$usuario) {
+            // El email no existe
+            $errores[] = "Incorrect credentials.";
+        } elseif (!password_verify($password, $usuario['password'])) {
+            // Email existe pero contraseña incorrecta
+            $errores[] = "Incorrect credentials.";
+        } elseif ((int)$usuario['is_active'] === 0) {
+            // Usuario existe, contraseña correcta, pero cuenta desactivada
+            $errores[] = "Your account has been deactivated by the administrators of the web. Please contact support@winecellar.com for further explanation and the possible reactivation of your account.";
+        } else {
+            // Todo correcto - iniciar sesión
             $_SESSION['usuario'] = [
                 'id'   => $usuario['id_usuario'],
                 'nombre' => $usuario['nombre'],
                 'rol'  => $usuario['rol']
             ];
-            // Redirigir según rol si quieres
             header("Location: ../index.php");
             exit;
-        } else {
-            $errores[] = "Credenciales incorrectas.";
         }
     }
 }
@@ -46,5 +54,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </label>
     <button type="submit">Entrar</button>
 </form>
+
+<p class="text-center">
+    Don't have an account? <a href="register.php">Register here</a>
+</p>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>

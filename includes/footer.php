@@ -1,6 +1,6 @@
 </main>
 <footer class="footer">
-    <p>&copy; <?= date('Y') ?> Wine Cellar - Tienda de vinos finos</p>
+    <p>&copy; <?= date('Y') ?> Wine Cellar - Fine wine shop</p>
 </footer>
 </body>
 </html>

@@ -14,3 +14,4 @@ require_once __DIR__ . '/../config.php';
 <body>
 <?php include __DIR__ . '/navbar.php'; ?>
 <main class="contenido">
+    <script src="<?= BASE_URL ?>/js/validaciones.js" defer></script>

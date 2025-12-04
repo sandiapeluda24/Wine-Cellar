@@ -26,3 +26,24 @@ footer.footer {
     background: #eee;
     margin-top: 40px;
 }
+
+.profile-card {
+    background: #fff;
+    padding: 20px;
+    max-width: 400px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    margin-top: 20px;
+}
+.profile-card p {
+    margin: 6px 0;
+}
+
+button.btn {
+    background-color: #4b1e24;
+    color: #f7f3f0;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+}

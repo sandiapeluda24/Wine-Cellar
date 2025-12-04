@@ -4,4 +4,3 @@
     <p>Aplicación para gestionar coleccionistas, sommeliers y vinos finos.</p>
 </section>
 <?php include __DIR__ . '/includes/footer.php'; ?>
-<?php include __DIR__ . '/includes/header.php'; ?>

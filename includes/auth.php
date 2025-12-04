@@ -1,4 +1,3 @@
-//Session management and user authentication functions
 
 <?php
 
