@@ -1,62 +1,101 @@
 <?php
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/db.php';
-include __DIR__ . '/../includes/header.php';
 
 requireRole('admin');
 
 $db = getDB();
 
-// Delete via GET ?delete=id
-if (isset($_GET['delete'])) {
-    $id = (int) $_GET['delete'];
-    $stmtDel = $db->prepare("DELETE FROM vinos WHERE id_vino = ?");
-    $stmtDel->execute([$id]);
-    header("Location: " . BASE_URL . "/pages/admin_vinos.php");
-    exit;
+$message = null;
+$error   = null;
+
+// Borrar vino (DELETE real; si prefieres soft delete luego lo cambiamos)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id_vino'], $_POST['action'])) {
+    $idVino = (int) $_POST['id_vino'];
+    $action = $_POST['action'];
+
+    if ($action === 'delete') {
+        $stmt = $db->prepare("DELETE FROM vinos WHERE id_vino = ?");
+        $stmt->execute([$idVino]);
+        $message = "Wine deleted correctly.";
+    }
 }
 
-$sql = "SELECT v.*, d.nombre AS denominacion
-        FROM vinos v
-        JOIN denominaciones d ON v.id_denominacion = d.id_denominacion
-        ORDER BY v.nombre";
-$stmt = $db->query($sql);
-$wines = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Obtener todos los vinos
+$stmt = $db->query("
+    SELECT id_vino, nombre, bodega, annada, tipo, pais, ventana_optima_inicio, ventana_optima_fin, precio, stock
+    FROM vinos
+    ORDER BY nombre
+");
+$vinos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+include __DIR__ . '/../includes/header.php';
 ?>
 
-<h2>Manage wines</h2>
+<h1>Manage wines</h1>
 
-<p><a href="<?= BASE_URL ?>/pages/admin_vino_form.php">+ Add new wine</a></p>
+<?php if ($message): ?>
+    <p style="color: green;"><?= htmlspecialchars($message) ?></p>
+<?php endif; ?>
 
-<table class="tabla">
+<?php if ($error): ?>
+    <p style="color: red;"><?= htmlspecialchars($error) ?></p>
+<?php endif; ?>
+
+<p>
+    <a href="<?= BASE_URL ?>/pages/admin_vino_form.php">+ Add new wine</a>
+</p>
+
+<table>
     <thead>
-        <tr>
-            <th>Name</th>
-            <th>Winery</th>
-            <th>Vintage</th>
-            <th>Denomination</th>
-            <th>Country</th>
-            <th>Type</th>
-            <th>Actions</th>
-        </tr>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Winery</th>
+        <th>Vintage</th>
+        <th>Type</th>
+        <th>Country</th>
+        <th>Optimal window</th>
+        <th>Price (€)</th>
+        <th>Stock</th>
+        <th>Actions</th>
+        
+    </tr>
     </thead>
     <tbody>
-    <?php foreach ($wines as $wine): ?>
+    <?php foreach ($vinos as $vino): ?>
         <tr>
-            <td><?= htmlspecialchars($wine['nombre']) ?></td>
-            <td><?= htmlspecialchars($wine['bodega']) ?></td>
-            <td><?= htmlspecialchars($wine['annada']) ?></td>
-            <td><?= htmlspecialchars($wine['denominacion']) ?></td>
-            <td><?= htmlspecialchars($wine['pais']) ?></td>
-            <td><?= htmlspecialchars($wine['tipo']) ?></td>
+            <td><?= htmlspecialchars($vino['id_vino']) ?></td>
+            <td><?= htmlspecialchars($vino['nombre']) ?></td>
+            <td><?= htmlspecialchars($vino['bodega']) ?></td>
+            <td><?= htmlspecialchars($vino['annada']) ?></td>
+            <td><?= htmlspecialchars($vino['tipo']) ?></td>
+            <td><?= htmlspecialchars($vino['pais']) ?></td>
             <td>
-                <a href="<?= BASE_URL ?>/pages/admin_vino_form.php?id=<?= $wine['id_vino'] ?>">Edit</a> |
-                <a href="<?= BASE_URL ?>/pages/admin_vinos.php?delete=<?= $wine['id_vino'] ?>"
-                   onclick="return confirm('Are you sure you want to delete this wine?');">Delete</a>
+                <?= htmlspecialchars($vino['ventana_optima_inicio']) ?>
+                –
+                <?= htmlspecialchars($vino['ventana_optima_fin']) ?>
             </td>
+            <td>
+                <a href="<?= BASE_URL ?>/pages/admin_vino_form.php?id_vino=<?= $vino['id_vino'] ?>">
+                    Edit
+                </a>
+
+                <form method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this wine?');">
+                    <input type="hidden" name="id_vino" value="<?= $vino['id_vino'] ?>">
+                    <button type="submit" name="action" value="delete">
+                        Delete
+                    </button>
+                </form>
+            </td>
+            <td><?= number_format($vino['precio'], 2) ?> €</td>
+            <td><?= (int)$vino['stock'] ?></td>
+
         </tr>
     <?php endforeach; ?>
     </tbody>
 </table>
+
+<p><a href="<?= BASE_URL ?>/pages/admin_panel.php">Back to admin panel</a></p>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>

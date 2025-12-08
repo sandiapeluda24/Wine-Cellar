@@ -1,49 +1,60 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 require_once __DIR__ . '/../includes/db.php';
 include __DIR__ . '/../includes/header.php';
 
-$errores = [];
+$errores    = [];
+$loginError = null;
+$user       = null;
+$password   = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = trim($_POST['email'] ?? '');
+    $email    = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
 
     if ($email === '' || $password === '') {
         $errores[] = "Email and password are required.";
     } else {
         $db = getDB();
-        // Primero buscar el usuario SIN verificar si está activo
         $stmt = $db->prepare("SELECT * FROM usuarios WHERE email = ?");
         $stmt->execute([$email]);
-        $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (!$usuario) {
-            // El email no existe
-            $errores[] = "Incorrect credentials.";
-        } elseif (!password_verify($password, $usuario['password'])) {
-            // Email existe pero contraseña incorrecta
-            $errores[] = "Incorrect credentials.";
-        } elseif ((int)$usuario['is_active'] === 0) {
-            // Usuario existe, contraseña correcta, pero cuenta desactivada
-            $errores[] = "Your account has been deactivated by the administrators of the web. Please contact support@winecellar.com for further explanation and the possible reactivation of your account.";
-        } else {
-            // Todo correcto - iniciar sesión
+        if (!$user || $password !== $user['password']) {
+    // Email no existe o contraseña incorrecta
+    $loginError = "Invalid email or password.";
+}
+elseif ((int)$user['is_active'] === 0) {
+            // Usuario existe, contraseña ok, pero cuenta desactivada
+            $loginError = "Your account has been deactivated by the administrators of the web. Please contact this email for further explanation and the possible reactivation of your account.";
+                } else {
+            // Login correcto
             $_SESSION['usuario'] = [
-                'id'   => $usuario['id_usuario'],
-                'nombre' => $usuario['nombre'],
-                'rol'  => $usuario['rol']
+                'id_usuario' => $user['id_usuario'],
+                'nombre'     => $user['nombre'],
+                'rol'        => $user['rol']
             ];
+
             header("Location: ../index.php");
             exit;
         }
+
     }
 }
 ?>
 
 <h2>Login</h2>
+
 <?php foreach ($errores as $e): ?>
     <p class="error"><?= htmlspecialchars($e) ?></p>
 <?php endforeach; ?>
+
+<?php if (!empty($loginError)): ?>
+    <p class="error"><?= htmlspecialchars($loginError) ?></p>
+<?php endif; ?>
 
 <form method="post" id="formLogin">
     <label>Email:

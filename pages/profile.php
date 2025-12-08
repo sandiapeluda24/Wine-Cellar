@@ -1,86 +1,53 @@
 <?php
+session_start();
 require_once __DIR__ . '/../includes/db.php';
-require_once __DIR__ . '/../includes/auth.php';
 include __DIR__ . '/../includes/header.php';
 
-requireLogin();
-
-$current = currentUser();
-$userId = $current['id'] ?? null;
-
-if (!$userId) {
-    echo "<p>Unable to load profile.</p>";
-    include __DIR__ . '/../includes/footer.php';
+// Comprobar que hay usuario loggeado
+if (!isset($_SESSION['usuario'])) {
+    header('Location: login.php');
     exit;
 }
 
 $db = getDB();
 
-// If the user submits a new description (only sommeliers)
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $current['rol'] === 'sommelier') {
-    $newDesc = trim($_POST['sommelier_description'] ?? '');
+// ID que guardamos en la sesión al hacer login
+$idUsuario = $_SESSION['usuario']['id_usuario'] ?? null;
 
-    $stmtUpdate = $db->prepare("
-        UPDATE usuarios
-        SET sommelier_description = ?
-        WHERE id_usuario = ?
-    ");
-    $stmtUpdate->execute([$newDesc, $userId]);
-
-    // Optionally refresh current user (session) – not strictly needed here
-    // You could also set a success message
-}
-
-$stmt = $db->prepare("
-    SELECT nombre, email, rol, certificado, sommelier_description, created_at
-    FROM usuarios
-    WHERE id_usuario = ?
-");
-$stmt->execute([$userId]);
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-if (!$user) {
-    echo "<p>User not found.</p>";
+if ($idUsuario === null) {
+    echo "<h1>Unable to load profile</h1>";
     include __DIR__ . '/../includes/footer.php';
     exit;
 }
 
-$roleRaw = $user['rol'];
-$roleLabel = $roleRaw;
-if ($roleRaw === 'admin') {
-    $roleLabel = 'Admin';
-} elseif ($roleRaw === 'coleccionista') {
-    $roleLabel = 'Collector';
-} elseif ($roleRaw === 'sommelier') {
-    $roleLabel = 'Sommelier';
-}
+// Cargar datos completos desde la BD
+$stmt = $db->prepare("SELECT * FROM usuarios WHERE id_usuario = ?");
+$stmt->execute([$idUsuario]);
+$usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
-$isCertified = ($user['certificado'] ?? 0) ? 'Yes' : 'No';
+if (!$usuario) {
+    echo "<h1>Unable to load profile</h1>";
+    include __DIR__ . '/../includes/footer.php';
+    exit;
+}
 ?>
 
-<h2>My profile</h2>
+<h1>My profile</h1>
 
-<div class="profile-card">
-    <p><strong>Name:</strong> <?= htmlspecialchars($user['nombre']) ?></p>
-    <p><strong>Email:</strong> <?= htmlspecialchars($user['email']) ?></p>
-    <p><strong>Role:</strong> <?= htmlspecialchars($roleLabel) ?></p>
+<p><strong>Name:</strong> <?= htmlspecialchars($usuario['nombre']) ?></p>
+<p><strong>Email:</strong> <?= htmlspecialchars($usuario['email']) ?></p>
+<p><strong>Role:</strong> <?= htmlspecialchars($usuario['rol']) ?></p>
+<p><strong>Member since:</strong> <?= htmlspecialchars($usuario['created_at']) ?></p>
 
-    <?php if ($roleRaw === 'sommelier'): ?>
-        <p><strong>Certified sommelier:</strong> <?= $isCertified ?></p>
+<?php if ($usuario['rol'] === 'sommelier'): ?>
+    <p><strong>Sommelier description:</strong><br>
+        <?= nl2br(htmlspecialchars($usuario['sommelier_description'] ?? '')) ?>
+    </p>
+<?php endif; ?>
 
-        <form method="post">
-            <label>Sommelier description<br>
-                <textarea name="sommelier_description" rows="5" cols="50"
-                    placeholder="Describe your skills and background as a sommelier..."><?= htmlspecialchars($user['sommelier_description'] ?? '') ?></textarea>
-            </label>
-            <br><br>
-            <button type="submit">Update description</button>
-        </form>
-    <?php endif; ?>
+<?php if ((int)$usuario['is_active'] === 0): ?>
+    <p style="color:red;"><strong>Warning:</strong> Your account is currently deactivated.</p>
+<?php endif; ?>
 
-    <?php if (!empty($user['created_at'])): ?>
-        <p><strong>Member since:</strong> <?= htmlspecialchars($user['created_at']) ?></p>
-    <?php endif; ?>
-</div>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>

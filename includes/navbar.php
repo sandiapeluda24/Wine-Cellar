@@ -11,6 +11,9 @@ require_once __DIR__ . '/auth.php';
         <?php if ($u['rol'] === 'admin'): ?>
             <a href="<?= BASE_URL ?>/pages/admin_panel.php">Admin panel</a>
         <?php endif; ?>
+<?php if (isset($_SESSION['usuario']) && $_SESSION['usuario']['rol'] === 'coleccionista'): ?>
+    <li><a href="<?= BASE_URL ?>/pages/my_purchases.php">My purchases</a></li>
+<?php endif; ?>
 
          <a href="<?= BASE_URL ?>/pages/profile.php">My profile</a>
 
