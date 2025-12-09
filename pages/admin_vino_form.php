@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $ventFin     = trim($_POST['ventana_optima_fin'] ?? '');
     $descripcion = trim($_POST['descripcion'] ?? '');
     $stock  = (int) ($_POST['stock'] ?? 0);  // NUEVO
-
+    $precio = (float)($_POST['precio'] ?? 0);
 
     // Validaciones básicas
     if ($nombre === '')  $errores[] = "Name is required.";
@@ -128,7 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $ventFin !== '' ? $ventFin : null,
                 $descripcion !== '' ? $descripcion : null,
                 $nombreImagen,
-                $precio
+                $precio,
                 $stock
             ]);
         } else {

@@ -62,16 +62,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'compr
     }
 }
 
-// --- Cargar lista de vinos ---
+// --- Cargar lista de vinos CON DENOMINACIÓN ---
 $stmt = $db->query("
-    SELECT id_vino, nombre, bodega, annada, tipo, pais,
-           ventana_optima_inicio, ventana_optima_fin, imagen, precio, stock
-    FROM vinos
-    ORDER BY nombre
+    SELECT v.id_vino, v.nombre, v.bodega, v.annada, v.tipo, v.pais,
+           v.ventana_optima_inicio, v.ventana_optima_fin, v.imagen, v.precio, v.stock,
+           d.nombre AS denominacion_nombre
+    FROM vinos v
+    LEFT JOIN denominaciones d ON v.id_denominacion = d.id_denominacion
+    ORDER BY v.nombre
 ");
 $vinos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
-
 
 <h1>Lista de vinos</h1>
 
@@ -101,9 +102,15 @@ $vinos = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <p><strong>Type:</strong> <?= htmlspecialchars($vino['tipo']) ?></p>
                 <?php endif; ?>
 
+                <?php if (!empty($vino['denominacion_nombre'])): ?>
+                    <p><strong>Denomination:</strong> 
+                        <span class="badge-denominacion"><?= htmlspecialchars($vino['denominacion_nombre']) ?></span>
+                    </p>
+                <?php endif; ?>
+
                 <?php if (isset($vino['precio'])): ?>
-    <p><strong>Price:</strong> <?= number_format($vino['precio'], 2) ?> €</p>
-<?php endif; ?>
+                    <p><strong>Price:</strong> <?= number_format($vino['precio'], 2) ?> €</p>
+                <?php endif; ?>
 
                 <?php if (!empty($vino['pais'])): ?>
                     <p><strong>Country:</strong> <?= htmlspecialchars($vino['pais']) ?></p>
@@ -133,22 +140,19 @@ $vinos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                 <p><strong>In stock:</strong> <?= (int)$vino['stock'] ?> bottles</p>
 
-
                 <?php if (isset($_SESSION['usuario']) && $_SESSION['usuario']['rol'] === 'coleccionista' && $vino['stock'] > 0): ?>
-    <form method="post" style="margin-top:8px;">
-        <input type="hidden" name="accion" value="comprar">
-        <input type="hidden" name="id_vino" value="<?= $vino['id_vino'] ?>">
-        <label>
-            Qty:
-            <input type="number" name="cantidad" value="1" min="1" max="<?= (int)$vino['stock'] ?>" style="width:60px;">
-        </label>
-        <button type="submit">Buy</button>
-    </form>
-<?php elseif ($vino['stock'] <= 0): ?>
-    <p style="color:red;"><strong>Out of stock</strong></p>
-<?php endif; ?>
-
-
+                    <form method="post" style="margin-top:8px;">
+                        <input type="hidden" name="accion" value="comprar">
+                        <input type="hidden" name="id_vino" value="<?= $vino['id_vino'] ?>">
+                        <label>
+                            Qty:
+                            <input type="number" name="cantidad" value="1" min="1" max="<?= (int)$vino['stock'] ?>" style="width:60px;">
+                        </label>
+                        <button type="submit">Buy</button>
+                    </form>
+                <?php elseif ($vino['stock'] <= 0): ?>
+                    <p style="color:red;"><strong>Out of stock</strong></p>
+                <?php endif; ?>
             </div>
         <?php endforeach; ?>
     </div>

@@ -47,3 +47,36 @@ button.btn {
     border-radius: 4px;
     cursor: pointer;
 }
+
+/* Estilos para estados de compra */
+.status-pending {
+    color: #f39c12;
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 4px;
+    background-color: #fef5e7;
+}
+
+.status-shipped {
+    color: #3498db;
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 4px;
+    background-color: #ebf5fb;
+}
+
+.status-delivered {
+    color: #27ae60;
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 4px;
+    background-color: #eafaf1;
+}
+
+.status-cancelled {
+    color: #e74c3c;
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 4px;
+    background-color: #fadbd8;
+}
