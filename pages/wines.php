@@ -8,76 +8,76 @@ $db = getDB();
 $mensaje = null;
 $mensajeError = null;
 
-// --- Gestión de compra ---
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'comprar') {
+// Crear carrito si no existe
+if (!isset($_SESSION['cart'])) {
+    $_SESSION['cart'] = []; // [id_vino => cantidad]
+}
 
-    if (!isset($_SESSION['usuario']) || $_SESSION['usuario']['rol'] !== 'coleccionista') {
-        $mensajeError = "You must be logged in as a collector to buy wines.";
+// --- Añadir a la cesta ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'add_to_cart') {
+
+    // Solo coleccionistas logueados pueden añadir a carrito
+    if (!isset($_SESSION['usuario']) || ($_SESSION['usuario']['rol'] ?? '') !== 'coleccionista') {
+        $mensajeError = "You must be logged in as a collector to add wines to the cart.";
     } else {
-        $idUsuario = $_SESSION['usuario']['id_usuario'] ?? ($_SESSION['usuario']['id'] ?? null);
+        $idVino = (int)($_POST['id_vino'] ?? 0);
+        $cantidad = max(1, (int)($_POST['cantidad'] ?? 1));
 
-        if ($idUsuario === null) {
-            $mensajeError = "Could not get your user id. Please log in again.";
+        // Validar que exista y ver stock actual
+        $stmt = $db->prepare("SELECT nombre, stock FROM vinos WHERE id_vino = ?");
+        $stmt->execute([$idVino]);
+        $vinoDB = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$vinoDB) {
+            $mensajeError = "Selected wine does not exist.";
         } else {
-            $idVino   = (int) ($_POST['id_vino'] ?? 0);
-            $cantidad = max(1, (int) ($_POST['cantidad'] ?? 1));
+            $stock = (int)$vinoDB['stock'];
+            $nombreVino = $vinoDB['nombre'];
 
-            try {
-                $db->beginTransaction();
+            // Cantidad total que quedaría en carrito para ese vino
+            $enCarrito = (int)($_SESSION['cart'][$idVino] ?? 0);
+            $totalDeseado = $enCarrito + $cantidad;
 
-                // Bloquear fila del vino y leer stock actual
-                $stmt = $db->prepare("SELECT stock FROM vinos WHERE id_vino = ? FOR UPDATE");
-                $stmt->execute([$idVino]);
-                $stockActual = $stmt->fetchColumn();
+            if ($stock <= 0) {
+                $mensajeError = "Sorry, \"$nombreVino\" is out of stock.";
+            } elseif ($totalDeseado > $stock) {
+                // Mensaje claro (en vez del mensaje feo del navegador)
+                $mensajeError = "Only $stock bottle(s) available for \"$nombreVino\". Please reduce the quantity.";
+            } else {
+                $_SESSION['cart'][$idVino] = $totalDeseado;
+                $restante = $stock - $totalDeseado;
+$mensaje = "Added to cart. If you checkout, \"$nombreVino\" will have $restante bottle(s) left. <a href='cart.php'>View cart</a>";
 
-                if ($stockActual === false) {
-                    $mensajeError = "Selected wine does not exist.";
-                    $db->rollBack();
-                } elseif ($stockActual < $cantidad) {
-                    $mensajeError = "Not enough stock. Only $stockActual bottles left.";
-                    $db->rollBack();
-                } else {
-                    // Restar stock
-                    $stmt = $db->prepare("UPDATE vinos SET stock = stock - ? WHERE id_vino = ?");
-                    $stmt->execute([$cantidad, $idVino]);
-
-                    // Registrar compra
-                    $stmt = $db->prepare("
-                        INSERT INTO compras (id_usuario, id_vino, cantidad)
-                        VALUES (?, ?, ?)
-                    ");
-                    $stmt->execute([$idUsuario, $idVino, $cantidad]);
-
-                    $db->commit();
-                    $mensaje = "Wine added to your purchases.";
-                }
-
-            } catch (Exception $e) {
-                if ($db->inTransaction()) {
-                    $db->rollBack();
-                }
-                $mensajeError = "An error occurred while processing your purchase.";
             }
         }
     }
 }
 
-// --- Cargar lista de vinos CON DENOMINACIÓN ---
+// --- Cargar lista de vinos ---
 $stmt = $db->query("
-    SELECT v.id_vino, v.nombre, v.bodega, v.annada, v.tipo, v.pais,
-           v.ventana_optima_inicio, v.ventana_optima_fin, v.imagen, v.precio, v.stock,
-           d.nombre AS denominacion_nombre
+    SELECT 
+        v.id_vino, v.nombre, v.bodega, v.annada, v.tipo, v.pais,
+        v.ventana_optima_inicio, v.ventana_optima_fin,
+        v.precio, v.stock,
+        d.nombre AS denominacion
     FROM vinos v
     LEFT JOIN denominaciones d ON v.id_denominacion = d.id_denominacion
     ORDER BY v.nombre
 ");
 $vinos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// contador carrito
+$cartCount = array_sum($_SESSION['cart']);
 ?>
 
 <h1>Lista de vinos</h1>
 
+<?php if ($cartCount > 0): ?>
+    <p><strong>Cart:</strong> <?= (int)$cartCount ?> item(s) — <a href="cart.php">Go to cart</a></p>
+<?php endif; ?>
+
 <?php if ($mensaje): ?>
-    <p style="color:green;"><?= htmlspecialchars($mensaje) ?></p>
+    <p style="color:green;"><?= $mensaje ?></p>
 <?php endif; ?>
 
 <?php if ($mensajeError): ?>
@@ -92,37 +92,34 @@ $vinos = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <div class="wine-card">
                 <h2><?= htmlspecialchars($vino['nombre']) ?></h2>
 
-                <?php if (!empty($vino['bodega'])): ?>
-                    <p><strong>Winery:</strong> <?= htmlspecialchars($vino['bodega']) ?></p>
-                <?php endif; ?>
-
-                <p><strong>Vintage:</strong> <?= htmlspecialchars($vino['annada']) ?></p>
-
-                <?php if (!empty($vino['tipo'])): ?>
-                    <p><strong>Type:</strong> <?= htmlspecialchars($vino['tipo']) ?></p>
-                <?php endif; ?>
-
-                <?php if (!empty($vino['denominacion_nombre'])): ?>
-                    <p><strong>Denomination:</strong> 
-                        <span class="badge-denominacion"><?= htmlspecialchars($vino['denominacion_nombre']) ?></span>
-                    </p>
-                <?php endif; ?>
-
-                <?php if (isset($vino['precio'])): ?>
-                    <p><strong>Price:</strong> <?= number_format($vino['precio'], 2) ?> €</p>
-                <?php endif; ?>
-
-                <?php if (!empty($vino['pais'])): ?>
-                    <p><strong>Country:</strong> <?= htmlspecialchars($vino['pais']) ?></p>
-                <?php endif; ?>
-
-                <?php if (!empty($vino['imagen'])): ?>
+<?php if (isset($vino['imagen']) && $vino['imagen'] !== ''): ?>
                     <p>
                         <img src="../img/wines/<?= htmlspecialchars($vino['imagen']) ?>"
                              alt="Bottle of <?= htmlspecialchars($vino['nombre']) ?>"
                              style="max-width:150px; height:auto;">
                     </p>
                 <?php endif; ?>
+
+                <?php if (!empty($vino['bodega'])): ?>
+                    <p><strong>Winery:</strong> <?= htmlspecialchars($vino['bodega']) ?></p>
+                <?php endif; ?>
+
+                <p><strong>Vintage:</strong> <?= htmlspecialchars($vino['annada']) ?></p>
+
+                <?php if (!empty($vino['denominacion'])): ?>
+                    <p><strong>Denomination:</strong> <?= htmlspecialchars($vino['denominacion']) ?></p>
+                <?php endif; ?>
+
+                <?php if (!empty($vino['tipo'])): ?>
+                    <p><strong>Type:</strong> <?= htmlspecialchars($vino['tipo']) ?></p>
+                <?php endif; ?>
+
+                <?php if (!empty($vino['pais'])): ?>
+                    <p><strong>Country:</strong> <?= htmlspecialchars($vino['pais']) ?></p>
+                <?php endif; ?>
+
+                <p><strong>Price:</strong> <?= number_format((float)$vino['precio'], 2) ?> €</p>
+                <p><strong>In stock:</strong> <?= (int)$vino['stock'] ?> bottle(s)</p>
 
                 <?php if (!empty($vino['ventana_optima_inicio']) || !empty($vino['ventana_optima_fin'])): ?>
                     <p><strong>Optimal window:</strong>
@@ -133,26 +130,27 @@ $vinos = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <?php endif; ?>
 
                 <p>
-                    <a href="vinos_detalle.php?id_vino=<?= $vino['id_vino'] ?>">
-                        View details
-                    </a>
+                    <a href="vinos_detalle.php?id_vino=<?= (int)$vino['id_vino'] ?>">View details</a>
                 </p>
 
-                <p><strong>In stock:</strong> <?= (int)$vino['stock'] ?> bottles</p>
+                <?php if (isset($_SESSION['usuario']) && ($_SESSION['usuario']['rol'] ?? '') === 'coleccionista'): ?>
+                    <?php if ((int)$vino['stock'] > 0): ?>
+                        <form method="post" style="margin-top:8px;">
+                            <input type="hidden" name="accion" value="add_to_cart">
+                            <input type="hidden" name="id_vino" value="<?= (int)$vino['id_vino'] ?>">
 
-                <?php if (isset($_SESSION['usuario']) && $_SESSION['usuario']['rol'] === 'coleccionista' && $vino['stock'] > 0): ?>
-                    <form method="post" style="margin-top:8px;">
-                        <input type="hidden" name="accion" value="comprar">
-                        <input type="hidden" name="id_vino" value="<?= $vino['id_vino'] ?>">
-                        <label>
-                            Qty:
-                            <input type="number" name="cantidad" value="1" min="1" max="<?= (int)$vino['stock'] ?>" style="width:60px;">
-                        </label>
-                        <button type="submit">Buy</button>
-                    </form>
-                <?php elseif ($vino['stock'] <= 0): ?>
-                    <p style="color:red;"><strong>Out of stock</strong></p>
+                            <label>
+                                Qty:
+                                <input type="number" name="cantidad" value="1" min="1" style="width:70px;">
+                            </label>
+
+                            <button type="submit">Add to cart</button>
+                        </form>
+                    <?php else: ?>
+                        <p style="color:red;"><strong>Out of stock</strong></p>
+                    <?php endif; ?>
                 <?php endif; ?>
+
             </div>
         <?php endforeach; ?>
     </div>

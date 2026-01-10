@@ -1,11 +1,19 @@
-
 <?php
+require_once __DIR__ . '/../config.php';
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+function redirect_to(string $url): void {
+    // Con ob_start() en config.php normalmente esto no fallará,
+    // pero dejo fallback por si alguna página imprime algo antes.
+    if (!headers_sent()) {
+        header('Location: ' . $url);
+        exit;
+    }
+    echo '<script>window.location.href=' . json_encode($url) . ';</script>';
+    echo '<noscript><meta http-equiv="refresh" content="0;url=' . htmlspecialchars($url, ENT_QUOTES) . '"></noscript>';
+    exit;
 }
 
-function isLoggedIn() {
+function isLoggedIn(): bool {
     return !empty($_SESSION['usuario']);
 }
 
@@ -13,19 +21,15 @@ function currentUser() {
     return $_SESSION['usuario'] ?? null;
 }
 
-function requireLogin() {
+function requireLogin(): void {
     if (!isLoggedIn()) {
-        header('Location: ' . BASE_URL . '/pages/login.php');
-        exit;
+        redirect_to(BASE_URL . '/pages/login.php');
     }
 }
 
-function requireRole($rol) {
+function requireRole(string $rol): void {
     requireLogin();
-    if ($_SESSION['usuario']['rol'] !== $rol) {
-        // aquí puedes mandar a una página de error o al inicio
-        header('Location: ' . BASE_URL . '/index.php');
-        exit;
+    if (($_SESSION['usuario']['rol'] ?? null) !== $rol) {
+        redirect_to(BASE_URL . '/index.php');
     }
 }
-

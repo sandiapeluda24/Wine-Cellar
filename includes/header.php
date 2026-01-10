@@ -1,7 +1,4 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
 require_once __DIR__ . '/../config.php';
 ?>
 <!DOCTYPE html>
@@ -14,4 +11,5 @@ require_once __DIR__ . '/../config.php';
 <body>
 <?php include __DIR__ . '/navbar.php'; ?>
 <main class="contenido">
-    <script src="<?= BASE_URL ?>/js/validaciones.js" defer></script>
+<script src="<?= BASE_URL ?>/js/validaciones.js" defer></script>
+

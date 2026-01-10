@@ -4,12 +4,11 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once __DIR__ . '/../includes/db.php';
-include __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../config.php';
 
 $errores    = [];
 $loginError = null;
 $user       = null;
-$password   = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email    = trim($_POST['email'] ?? '');
@@ -18,32 +17,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($email === '' || $password === '') {
         $errores[] = "Email and password are required.";
     } else {
-        $db = getDB();
-        $stmt = $db->prepare("SELECT * FROM usuarios WHERE email = ?");
-        $stmt->execute([$email]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        try {
+            $db = getDB();
+            $stmt = $db->prepare("SELECT * FROM usuarios WHERE email = ?");
+            $stmt->execute([$email]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (!$user || $password !== $user['password']) {
-    // Email no existe o contraseña incorrecta
-    $loginError = "Invalid email or password.";
-}
-elseif ((int)$user['is_active'] === 0) {
-            // Usuario existe, contraseña ok, pero cuenta desactivada
-            $loginError = "Your account has been deactivated by the administrators of the web. Please contact this email for further explanation and the possible reactivation of your account.";
+            // 1) Usuario no existe
+            if (!$user) {
+                $loginError = "Invalid email or password.";
+            } else {
+                // 2) Password: soporta hash o texto plano
+                $dbPass = (string)($user['password'] ?? '');
+                $looksHashed = str_starts_with($dbPass, '$2y$') || str_starts_with($dbPass, '$2a$') || str_starts_with($dbPass, '$argon2');
+
+                $passwordOk = $looksHashed ? password_verify($password, $dbPass) : ($password === $dbPass);
+
+                if (!$passwordOk) {
+                    $loginError = "Invalid email or password.";
+                }
+                // 3) is_active opcional (si no existe, asumimos activo)
+                elseif (isset($user['is_active']) && (int)$user['is_active'] === 0) {
+                    $loginError = "Your account has been deactivated by the administrators of the web. Please contact this email for further explanation and the possible reactivation of your account.";
                 } else {
-            // Login correcto
-            $_SESSION['usuario'] = [
-                'id_usuario' => $user['id_usuario'],
-                'nombre'     => $user['nombre'],
-                'rol'        => $user['rol']
-            ];
+                    // Login correcto
+                    $_SESSION['usuario'] = [
+                        'id_usuario' => $user['id_usuario'] ?? null,
+                        'nombre'     => $user['nombre'] ?? '',
+                        'rol'        => $user['rol'] ?? 'coleccionista',
+                        'email'      => $user['email'] ?? $email
+                    ];
 
-            header("Location: ../index.php");
-            exit;
+                    header('Location: ' . BASE_URL . '/index.php');
+                    exit;
+                }
+            }
+
+        } catch (PDOException $e) {
+            $loginError = "Database error: " . $e->getMessage();
         }
-
     }
 }
+
+// IMPORTANTE: incluir header DESPUÉS de procesar el POST (para no romper header())
+include __DIR__ . '/../includes/header.php';
 ?>
 
 <h2>Login</h2>
@@ -58,7 +75,7 @@ elseif ((int)$user['is_active'] === 0) {
 
 <form method="post" id="formLogin">
     <label>Email:
-        <input type="email" name="email" required>
+        <input type="email" name="email" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required>
     </label>
     <label>Contraseña:
         <input type="password" name="password" required>
@@ -67,7 +84,7 @@ elseif ((int)$user['is_active'] === 0) {
 </form>
 
 <p class="text-center">
-    Don't have an account? <a href="register.php">Register here</a>
+    Don't have an account? <a href="<?= BASE_URL ?>/pages/register.php">Register here</a>
 </p>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>

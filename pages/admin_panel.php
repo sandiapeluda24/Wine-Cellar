@@ -20,10 +20,12 @@ $usuarioNombre = $_SESSION['usuario']['nombre'] ?? 'admin';
 
 <nav>
     <ul>
-        <li><a href="admin_usuarios.php">Gestionar usuarios</a></li>
-        <li><a href="admin_usuario_form.php">Nuevo usuario</a></li>
-        <li><a href="admin_vinos.php">Gestionar vinos</a></li>
-        <li><a href="admin_vino_form.php">Nuevo vino</a></li>
+        <li><a href="admin_usuarios.php">Manage users</a></li>
+        <li><a href="admin_usuario_form.php">New user</a></li>
+        <li><a href="admin_vinos.php">Manage wines</a></li>
+        <li><a href="admin_vino_form.php">New wine</a></li>
+        <li><a href="admin_compras.php">Purchase history</a></li>
+
     </ul>
 </nav>
 
