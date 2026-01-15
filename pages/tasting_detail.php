@@ -48,6 +48,20 @@ $tastingKey = pick_col($tastingsCols, ['tasting_id', 'id_cata'], 'tasting_id'); 
 $signupTastingKey = pick_col($signupCols, ['tasting_id', 'id_cata'], 'tasting_id');
 $signupUserKey    = pick_col($signupCols, ['user_id', 'id_usuario'], 'user_id');
 
+// Signup table columns that may vary
+$signupPk = pick_col($signupCols, ['signup_id', 'id_signup', 'id_inscripcion', 'id_registro', 'id'], null);
+$signupRoleCol = pick_col($signupCols, ['role', 'rol'], null);
+$signupStatusCol = pick_col($signupCols, ['status', 'estado'], null);
+$signupCreatedAtCol = pick_col($signupCols, ['created_at', 'fecha_creacion', 'created', 'fecha_registro', 'fecha'], null);
+
+if (!$signupRoleCol) die("Missing column role/rol in tasting_signups.");
+if (!$signupStatusCol) die("Missing column status/estado in tasting_signups.");
+
+// Order-by helpers (avoid errors if created_at doesn't exist)
+$signupOrderByWithAlias = $signupCreatedAtCol ? "s.`$signupCreatedAtCol`" : ($signupPk ? "s.`$signupPk`" : "s.`$signupUserKey`");
+$signupOrderByNoAlias   = $signupCreatedAtCol ? "`$signupCreatedAtCol`" : ($signupPk ? "`$signupPk`" : "`$signupUserKey`");
+
+
 // Date column in tastings (fix for your previous error)
 $dateCol = pick_col($tastingsCols, ['fecha_cata', 'tasting_date', 'fecha', 'date'], null);
 
@@ -73,28 +87,35 @@ $userRole = $u['rol'] ?? '';
 $isCertifiedSommelier = ($userRole === 'sommelier') && !empty($u['certificado']);
 $canJoin = ($userRole === 'coleccionista') || $isCertifiedSommelier;
 
+
 // ---------- My signup ----------
+$selectParts = [];
+if ($signupPk) $selectParts[] = "s.`$signupPk` AS signup_id";
+$selectParts[] = "s.`$signupRoleCol` AS role";
+$selectParts[] = "s.`$signupStatusCol` AS status";
+$mySignupSelect = implode(", ", $selectParts);
+
 $stmt = $db->prepare("
-  SELECT signup_id, role, status
-  FROM tasting_signups
-  WHERE `$signupTastingKey` = ?
-    AND `$signupUserKey` = ?
-    AND status <> 'cancelled'
+  SELECT $mySignupSelect
+  FROM tasting_signups s
+  WHERE s.`$signupTastingKey` = ?
+    AND s.`$signupUserKey` = ?
+    AND s.`$signupStatusCol` <> 'cancelled'
   LIMIT 1
 ");
 $stmt->execute([$tastingId, $u['id_usuario']]);
 $mySignup = $stmt->fetch(PDO::FETCH_ASSOC);
 
 // ---------- Counts (ratio 1 sommelier / 20 coleccionistas) ----------
-$stmt = $db->prepare("SELECT COUNT(*) FROM tasting_signups WHERE `$signupTastingKey`=? AND role='sommelier' AND status='confirmed'");
+$stmt = $db->prepare("SELECT COUNT(*) FROM tasting_signups WHERE `$signupTastingKey`=? AND `$signupRoleCol`='sommelier' AND `$signupStatusCol`='confirmed'");
 $stmt->execute([$tastingId]);
 $totalSommeliers = (int)$stmt->fetchColumn();
 
-$stmt = $db->prepare("SELECT COUNT(*) FROM tasting_signups WHERE `$signupTastingKey`=? AND role='coleccionista' AND status='confirmed'");
+$stmt = $db->prepare("SELECT COUNT(*) FROM tasting_signups WHERE `$signupTastingKey`=? AND `$signupRoleCol`='coleccionista' AND `$signupStatusCol`='confirmed'");
 $stmt->execute([$tastingId]);
 $confirmedCollectors = (int)$stmt->fetchColumn();
 
-$stmt = $db->prepare("SELECT COUNT(*) FROM tasting_signups WHERE `$signupTastingKey`=? AND role='coleccionista' AND status='waitlist'");
+$stmt = $db->prepare("SELECT COUNT(*) FROM tasting_signups WHERE `$signupTastingKey`=? AND `$signupRoleCol`='coleccionista' AND `$signupStatusCol`='waitlist'");
 $stmt->execute([$tastingId]);
 $waitlistCollectors = (int)$stmt->fetchColumn();
 
@@ -117,9 +138,9 @@ $stmt = $db->prepare("
   FROM tasting_signups s
   INNER JOIN usuarios u ON u.id_usuario = s.`$signupUserKey`
   WHERE s.`$signupTastingKey` = ?
-    AND s.role = 'sommelier'
-    AND s.status = 'confirmed'
-  ORDER BY s.created_at ASC
+    AND s.`$signupRoleCol` = 'sommelier'
+    AND s.`$signupStatusCol` = 'confirmed'
+  ORDER BY $signupOrderByWithAlias ASC
 ");
 $stmt->execute([$tastingId]);
 $sommeliers = $stmt->fetchAll(PDO::FETCH_COLUMN);
@@ -162,17 +183,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['inscribir'])) {
             $db->beginTransaction();
 
             // Recompute inside transaction
-            $stmt = $db->prepare("SELECT COUNT(*) FROM tasting_signups WHERE `$signupTastingKey`=? AND role='sommelier' AND status='confirmed'");
+            $stmt = $db->prepare("SELECT COUNT(*) FROM tasting_signups WHERE `$signupTastingKey`=? AND `$signupRoleCol`='sommelier' AND `$signupStatusCol`='confirmed'");
             $stmt->execute([$tastingId]);
             $sommeliersNow = (int)$stmt->fetchColumn();
 
-            $stmt = $db->prepare("SELECT COUNT(*) FROM tasting_signups WHERE `$signupTastingKey`=? AND role='coleccionista' AND status='confirmed'");
+            $stmt = $db->prepare("SELECT COUNT(*) FROM tasting_signups WHERE `$signupTastingKey`=? AND `$signupRoleCol`='coleccionista' AND `$signupStatusCol`='confirmed'");
             $stmt->execute([$tastingId]);
             $confirmedNow = (int)$stmt->fetchColumn();
 
             if ($isCertifiedSommelier) {
                 // Sommelier joins as confirmed
-                $stmt = $db->prepare("INSERT INTO tasting_signups (`$signupTastingKey`, `$signupUserKey`, role, status) VALUES (?, ?, 'sommelier', 'confirmed')");
+                $stmt = $db->prepare("INSERT INTO tasting_signups (`$signupTastingKey`, `$signupUserKey`, `$signupRoleCol`, `$signupStatusCol`) VALUES (?, ?, 'sommelier', 'confirmed')");
                 $stmt->execute([$tastingId, $u['id_usuario']]);
 
                 // Promote waitlist because we opened 20 seats more (bounded by maxCollectors)
@@ -184,11 +205,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['inscribir'])) {
                     $toPromote = (int)$toPromote;
                     $db->exec("
                         UPDATE tasting_signups
-                        SET status='confirmed'
+                        SET `$signupStatusCol`='confirmed'
                         WHERE `$signupTastingKey`=".(int)$tastingId."
-                          AND role='coleccionista'
-                          AND status='waitlist'
-                        ORDER BY created_at ASC
+                          AND `$signupRoleCol`='coleccionista'
+                          AND `$signupStatusCol`='waitlist'
+                        ORDER BY $signupOrderByNoAlias ASC
                         LIMIT $toPromote
                     ");
                 }
@@ -199,7 +220,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['inscribir'])) {
                 $slotsNow = min($maxCollectors, $sommeliersNow * 20);
                 $status = ($confirmedNow < $slotsNow) ? 'confirmed' : 'waitlist';
 
-                $stmt = $db->prepare("INSERT INTO tasting_signups (`$signupTastingKey`, `$signupUserKey`, role, status) VALUES (?, ?, 'coleccionista', ?)");
+                $stmt = $db->prepare("INSERT INTO tasting_signups (`$signupTastingKey`, `$signupUserKey`, `$signupRoleCol`, `$signupStatusCol`) VALUES (?, ?, 'coleccionista', ?)");
                 $stmt->execute([$tastingId, $u['id_usuario'], $status]);
 
                 $mensaje = ($status === 'confirmed')

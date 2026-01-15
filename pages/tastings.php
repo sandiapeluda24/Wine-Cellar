@@ -3,10 +3,7 @@ require_once __DIR__ . '/../includes/auth.php';
 requireLogin();
 
 require_once __DIR__ . '/../includes/db.php';
-include __DIR__ . '/../includes/header.php';
 
-
-requireLogin();
 $u = currentUser();
 $db = getDB();
 
