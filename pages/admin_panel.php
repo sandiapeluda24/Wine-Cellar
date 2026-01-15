@@ -25,6 +25,8 @@ $usuarioNombre = $_SESSION['usuario']['nombre'] ?? 'admin';
         <li><a href="admin_vinos.php">Manage wines</a></li>
         <li><a href="admin_vino_form.php">New wine</a></li>
         <li><a href="admin_compras.php">Purchase history</a></li>
+        <li><a href="admin_tastings.php">Manage tastings</a></li>
+
 
     </ul>
 </nav>

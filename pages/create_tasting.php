@@ -66,6 +66,13 @@ $twVinoCol  = in_array('id_vino', $twCols, true) ? 'id_vino' : (in_array('wine_i
 $twOrdenCol = in_array('orden_degustacion', $twCols, true) ? 'orden_degustacion' : (in_array('orden', $twCols, true) ? 'orden' : null);
 $twNotasCol = in_array('notas_cata', $twCols, true) ? 'notas_cata' : (in_array('notas', $twCols, true) ? 'notas' : null);
 
+// Compat para tasting_signups (Opción B: asignación/confirmación del sommelier)
+$suCols = tableColumns($db, 'tasting_signups');
+$suTastingCol = in_array('tasting_id', $suCols, true) ? 'tasting_id' : (in_array('id_cata', $suCols, true) ? 'id_cata' : 'tasting_id');
+$suUserCol    = in_array('user_id', $suCols, true) ? 'user_id' : (in_array('id_usuario', $suCols, true) ? 'id_usuario' : 'user_id');
+$suRoleCol    = in_array('role', $suCols, true) ? 'role' : (in_array('rol', $suCols, true) ? 'rol' : null);
+$suStatusCol  = in_array('status', $suCols, true) ? 'status' : (in_array('estado', $suCols, true) ? 'estado' : null);
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $titulo        = trim($_POST['titulo'] ?? '');
     $descripcion   = trim($_POST['descripcion'] ?? '');
@@ -181,6 +188,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute($vals);
 
             $idCata = (int)$db->lastInsertId();
+
+            // ---------------- Opción B ----------------
+            // Guardar la asignación del sommelier en tasting_signups para que el sommelier pueda confirmarla.
+            // - Admin asigna -> status 'pending'
+            // - Sommelier crea su propia cata -> status 'confirmed'
+            if (!empty($suCols) && $suRoleCol && $suStatusCol) {
+                $sommelierStatus = $isAdmin ? 'pending' : 'confirmed';
+
+                // Si ya existiera una asignación (por reintentos), la actualizamos.
+                $chk = $db->prepare("SELECT COUNT(*) FROM tasting_signups WHERE `$suTastingCol`=? AND `$suRoleCol`='sommelier'");
+                $chk->execute([$idCata]);
+                $exists = (int)$chk->fetchColumn() > 0;
+
+                if ($exists) {
+                    $up = $db->prepare("UPDATE tasting_signups SET `$suUserCol`=?, `$suStatusCol`=? WHERE `$suTastingCol`=? AND `$suRoleCol`='sommelier'");
+                    $up->execute([$id_sommelier, $sommelierStatus, $idCata]);
+                } else {
+                    $ins = $db->prepare("INSERT INTO tasting_signups (`$suTastingCol`, `$suUserCol`, `$suRoleCol`, `$suStatusCol`) VALUES (?, ?, 'sommelier', ?)");
+                    $ins->execute([$idCata, $id_sommelier, $sommelierStatus]);
+                }
+            }
 
             // Insertar vinos seleccionados (orden + notas si existen)
             $orden = 1;
@@ -327,4 +355,3 @@ include __DIR__ . '/../includes/header.php';
 <?php endif; ?>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>
-                
