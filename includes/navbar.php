@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/db.php';
 ?>
 <nav class="navbar">
     <a href="<?= BASE_URL ?>/index.php">Home</a>
@@ -8,8 +9,24 @@ require_once __DIR__ . '/auth.php';
 
     <?php if (isLoggedIn()):
         $u = currentUser();
+        $db = getDB();
+
+        // Refresh certificado from DB if missing/stale
+        $uid = (int)($u['id_usuario'] ?? $u['id'] ?? ($_SESSION['usuario']['id_usuario'] ?? $_SESSION['usuario']['id'] ?? 0));
+        if ($uid > 0) {
+            $stmt = $db->prepare("SELECT rol, certificado FROM usuarios WHERE id_usuario = ?");
+            $stmt->execute([$uid]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($row) {
+                $u['rol'] = $row['rol'] ?? ($u['rol'] ?? '');
+                $u['certificado'] = (int)($row['certificado'] ?? 0);
+                $_SESSION['usuario']['rol'] = $u['rol'];
+                $_SESSION['usuario']['certificado'] = $u['certificado'];
+            }
+        }
+
         $rol = $u['rol'] ?? '';
-        $certificado = !empty($u['certificado'] ?? null);
+        $isCertifiedSommelier = ($rol === 'sommelier' && !empty($u['certificado']));
     ?>
 
         <?php if ($rol === 'admin'): ?>
@@ -17,7 +34,11 @@ require_once __DIR__ . '/auth.php';
             <a href="<?= BASE_URL ?>/pages/create_tasting.php">Create Tasting</a>
         <?php endif; ?>
 
-        <?php if ($rol === 'sommelier' && $certificado): ?>
+        <?php if ($rol === 'sommelier'): ?>
+            <a href="<?= BASE_URL ?>/pages/sommelier_docs.php">My certification</a>
+        <?php endif; ?>
+
+        <?php if ($isCertifiedSommelier): ?>
             <a href="<?= BASE_URL ?>/pages/create_tasting.php">Create Tasting</a>
         <?php endif; ?>
 
@@ -27,7 +48,7 @@ require_once __DIR__ . '/auth.php';
 
         <a href="<?= BASE_URL ?>/pages/profile.php">My profile</a>
 
-        <span class="nav-user">Hello, <?= htmlspecialchars(explode(' ', $u['nombre'] ?? '')[0] ?? '') ?></span>
+        <span class="nav-user">Hello, <?= htmlspecialchars(explode(' ', (string)($u['nombre'] ?? 'User'))[0]) ?></span>
         <a href="<?= BASE_URL ?>/pages/logout.php">Logout</a>
 
     <?php else: ?>

@@ -11,10 +11,16 @@ if (!isset($_SESSION['usuario']) || ($_SESSION['usuario']['rol'] ?? '') !== 'adm
 
 // Helpers para detectar columnas existentes (evita "Unknown column")
 function tableExists(PDO $db, string $table): bool {
-    $stmt = $db->prepare("SHOW TABLES LIKE ?");
+    $stmt = $db->prepare("
+        SELECT COUNT(*)
+        FROM information_schema.tables
+        WHERE table_schema = DATABASE()
+          AND table_name = ?
+    ");
     $stmt->execute([$table]);
-    return (bool)$stmt->fetchColumn();
+    return (int)$stmt->fetchColumn() > 0;
 }
+
 
 function getColumns(PDO $db, string $table): array {
     $cols = [];

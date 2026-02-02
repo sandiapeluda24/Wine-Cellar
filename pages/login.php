@@ -27,12 +27,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!$user) {
                 $loginError = "Invalid email or password.";
             } else {
-                // 2) Password: soporta hash o texto plano
+                // 2) Password: supports hashed or plaintext (legacy)
                 $dbPass = (string)($user['password'] ?? '');
-                $looksHashed = str_starts_with($dbPass, '$2y$') || str_starts_with($dbPass, '$2a$') || str_starts_with($dbPass, '$argon2');
 
-                $passwordOk = $looksHashed ? password_verify($password, $dbPass) : ($password === $dbPass);
+                $looksHashed =
+                    (strncmp($dbPass, '$2y$', 4) === 0) ||
+                    (strncmp($dbPass, '$2a$', 4) === 0) ||
+                    (strncmp($dbPass, '$argon2', 6) === 0);
 
+                $passwordOk = $looksHashed
+                    ? password_verify($password, $dbPass)
+                    : hash_equals($dbPass, (string)$password);
+
+                // Optional: if password was plaintext and login is correct, migrate to hash automatically
+                if ($passwordOk && !$looksHashed && !empty($user['id_usuario'])) {
+                    $newHash = password_hash($password, PASSWORD_DEFAULT);
+                    $upd = $db->prepare("UPDATE usuarios SET password = ? WHERE id_usuario = ?");
+                    $upd->execute([$newHash, (int)$user['id_usuario']]);
+                    $user['password'] = $newHash;
+                }
                 if (!$passwordOk) {
                     $loginError = "Invalid email or password.";
                 }
@@ -42,10 +55,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 } else {
                     // Login correcto
                     $_SESSION['usuario'] = [
-                        'id_usuario' => $user['id_usuario'] ?? null,
-                        'nombre'     => $user['nombre'] ?? '',
-                        'rol'        => $user['rol'] ?? 'coleccionista',
-                        'email'      => $user['email'] ?? $email
+                        'id'          => $user['id_usuario'] ?? null,
+                        'id_usuario'  => $user['id_usuario'] ?? null,
+                        'nombre'      => $user['nombre'] ?? '',
+                        'rol'         => $user['rol'] ?? '',
+                        'certificado' => (int)($user['certificado'] ?? 0),
+                        'email'       => $user['email'] ?? $email
                     ];
 
                     header('Location: ' . BASE_URL . '/index.php');
@@ -77,10 +92,10 @@ include __DIR__ . '/../includes/header.php';
     <label>Email:
         <input type="email" name="email" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required>
     </label>
-    <label>Contraseña:
+    <label>Password:
         <input type="password" name="password" required>
     </label>
-    <button type="submit">Entrar</button>
+    <button type="submit">Login</button>
 </form>
 
 <p class="text-center">

@@ -71,23 +71,25 @@ include __DIR__ . '/../includes/header.php';
             <td><?= htmlspecialchars($user['created_at']) ?></td>
             <td><?= $user['is_active'] ? 'Activo' : 'Desactivado' ?></td>
             <td>
-                <?php if ($currentUserId !== null && $user['id_usuario'] === $currentUserId): ?>
-                    (Tú)
-                <?php else: ?>
-                    <form method="post" style="display:inline;">
-                        <input type="hidden" name="id_usuario" value="<?= $user['id_usuario'] ?>">
-                        <?php if ($user['is_active']): ?>
-                            <button type="submit" name="action" value="deactivate">
-                                Desactivar
-                            </button>
-                        <?php else: ?>
-                            <button type="submit" name="action" value="activate">
-                                Reactivar
-                            </button>
-                        <?php endif; ?>
-                    </form>
-                <?php endif; ?>
-            </td>
+    <a href="<?= BASE_URL ?>/pages/admin_usuario_form.php?id=<?= (int)$user['id_usuario'] ?>"
+       style="margin-right:10px;">
+        Editar
+    </a>
+
+    <?php if ($currentUserId !== null && $user['id_usuario'] === $currentUserId): ?>
+        (Tú)
+    <?php else: ?>
+        <form method="post" style="display:inline;">
+            <input type="hidden" name="id_usuario" value="<?= (int)$user['id_usuario'] ?>">
+            <?php if ($user['is_active']): ?>
+                <button type="submit" name="action" value="deactivate">Desactivar</button>
+            <?php else: ?>
+                <button type="submit" name="action" value="activate">Reactivar</button>
+            <?php endif; ?>
+        </form>
+    <?php endif; ?>
+</td>
+
         </tr>
     <?php endforeach; ?>
     </tbody>

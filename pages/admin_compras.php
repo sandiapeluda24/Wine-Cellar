@@ -35,7 +35,22 @@ $comprasCols  = tableColumns($db, 'compras');
 $usuariosCols = tableColumns($db, 'usuarios');
 
 // Columna de fecha en compras: created_at (recomendada) o fecha (legacy)
-$dateCol = in_array('created_at', $comprasCols, true) ? 'created_at' : 'fecha';
+// Columna de fecha en compras (elige la primera que exista)
+$dateCandidates = [
+    'created_at',
+    'fecha',
+    'fecha_compra',
+    'fechacompra',
+    'data',
+    'data_compra',
+    'purchase_at',
+    'purchased_at',
+];
+$dateCol = null;
+foreach ($dateCandidates as $cand) {
+    if (in_array($cand, $comprasCols, true)) { $dateCol = $cand; break; }
+}
+
 
 // Columna email en usuarios (si existe)
 $emailCol = null;

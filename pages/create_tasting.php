@@ -6,6 +6,16 @@ requireLogin();
 
 $u  = currentUser();
 $db = getDB();
+if (($u['rol'] ?? '') === 'sommelier') {
+    $uid = (int)($u['id_usuario'] ?? $u['id'] ?? ($_SESSION['usuario']['id_usuario'] ?? $_SESSION['usuario']['id'] ?? 0));
+    if ($uid > 0) {
+        $stmt = $db->prepare("SELECT certificado FROM usuarios WHERE id_usuario = ?");
+        $stmt->execute([$uid]);
+        $cert = (int)$stmt->fetchColumn();
+        $u['certificado'] = $cert;
+        $_SESSION['usuario']['certificado'] = $cert;
+    }
+}
 
 $isAdmin = (($u['rol'] ?? '') === 'admin');
 $isSommelierCertified = (($u['rol'] ?? '') === 'sommelier' && !empty($u['certificado']));
