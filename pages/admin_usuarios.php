@@ -39,62 +39,88 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 include __DIR__ . '/../includes/header.php';
 ?>
 
-<h1>Gestionar usuarios</h1>
+<section class="admin-hero">
+    <div class="admin-shell">
+        <div class="admin-head">
+            <div class="admin-kicker">Administración</div>
+            <h1 class="admin-title">Usuarios</h1>
+            <p class="admin-subtitle">Edita roles y controla el acceso (activar/desactivar cuentas).</p>
 
-<?php if ($message): ?>
-    <p style="color: green;"><?= htmlspecialchars($message) ?></p>
-<?php endif; ?>
+            <div class="admin-actions" style="margin-top: 14px;">
+                <a class="btn btn-sm btn-ghost" href="<?= BASE_URL ?>/pages/admin_panel.php">← Volver al panel</a>
+            </div>
+        </div>
 
-<?php if ($error): ?>
-    <p style="color: red;"><?= htmlspecialchars($error) ?></p>
-<?php endif; ?>
-
-<table>
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>Nombre</th>
-        <th>Email</th>
-        <th>Rol</th>
-        <th>Miembro desde</th>
-        <th>Estado</th>
-        <th>Acciones</th>
-    </tr>
-    </thead>
-    <tbody>
-    <?php foreach ($users as $user): ?>
-        <tr>
-            <td><?= htmlspecialchars($user['id_usuario']) ?></td>
-            <td><?= htmlspecialchars($user['nombre']) ?></td>
-            <td><?= htmlspecialchars($user['email']) ?></td>
-            <td><?= htmlspecialchars($user['rol']) ?></td>
-            <td><?= htmlspecialchars($user['created_at']) ?></td>
-            <td><?= $user['is_active'] ? 'Activo' : 'Desactivado' ?></td>
-            <td>
-    <a href="<?= BASE_URL ?>/pages/admin_usuario_form.php?id=<?= (int)$user['id_usuario'] ?>"
-       style="margin-right:10px;">
-        Editar
-    </a>
-
-    <?php if ($currentUserId !== null && $user['id_usuario'] === $currentUserId): ?>
-        (Tú)
-    <?php else: ?>
-        <form method="post" style="display:inline;">
-            <input type="hidden" name="id_usuario" value="<?= (int)$user['id_usuario'] ?>">
-            <?php if ($user['is_active']): ?>
-                <button type="submit" name="action" value="deactivate">Desactivar</button>
-            <?php else: ?>
-                <button type="submit" name="action" value="activate">Reactivar</button>
-            <?php endif; ?>
-        </form>
+    <?php if ($message): ?>
+        <div class="notice notice-success"><?= htmlspecialchars($message) ?></div>
     <?php endif; ?>
-</td>
 
-        </tr>
-    <?php endforeach; ?>
-    </tbody>
-</table>
+    <?php if ($error): ?>
+        <div class="notice notice-error"><?= htmlspecialchars($error) ?></div>
+    <?php endif; ?>
 
-<p><a href="admin_panel.php">Volver al panel de administración</a></p>
+        <div class="table-wrap">
+            <table class="users-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Rol</th>
+                    <th>Miembro desde</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($users as $user): ?>
+                    <tr>
+                        <td><?= htmlspecialchars($user['id_usuario']) ?></td>
+                        <td><?= htmlspecialchars($user['nombre']) ?></td>
+                        <td class="cell-mono"><?= htmlspecialchars($user['email']) ?></td>
+                        <td><span class="badge badge-soft"><?= htmlspecialchars($user['rol']) ?></span></td>
+                        <td class="cell-mono"><?= htmlspecialchars($user['created_at']) ?></td>
+                        <td>
+                            <?php if ($user['is_active']): ?>
+                                <span class="badge badge-status--active">Activo</span>
+                            <?php else: ?>
+                                <span class="badge badge-status--inactive">Desactivado</span>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <div class="table-actions">
+                                <a class="btn btn-secondary btn-sm"
+                                   href="<?= BASE_URL ?>/pages/admin_usuario_form.php?id=<?= (int)$user['id_usuario'] ?>">
+                                    Editar
+                                </a>
+
+                                <?php if ($currentUserId !== null && (int)$user['id_usuario'] === (int)$currentUserId): ?>
+                                    <span class="badge badge-status--self">Tú</span>
+                                <?php else: ?>
+                                    <form method="post" class="inline-form"
+                                          onsubmit="return confirm('¿Seguro que quieres cambiar el estado de este usuario?');">
+                                        <input type="hidden" name="id_usuario" value="<?= (int)$user['id_usuario'] ?>">
+
+                                        <?php if ($user['is_active']): ?>
+                                            <button class="btn btn-danger btn-sm" type="submit" name="action" value="deactivate">
+                                                Desactivar
+                                            </button>
+                                        <?php else: ?>
+                                            <button class="btn btn-success btn-sm" type="submit" name="action" value="activate">
+                                                Reactivar
+                                            </button>
+                                        <?php endif; ?>
+                                    </form>
+                                <?php endif; ?>
+                            </div>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+
+            </table>
+        </div>
+    </div>
+</section>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>

@@ -6,7 +6,8 @@ require_once __DIR__ . '/../config.php';
 <head>
     <meta charset="UTF-8">
     <title>Wine Cellar</title>
-    <link rel="stylesheet" href="<?= BASE_URL ?>/css/style.css">
+    <link rel="stylesheet" href="/css/style.css?v=<?= time() ?>">
+
 </head>
 <body>
 <?php include __DIR__ . '/navbar.php'; ?>

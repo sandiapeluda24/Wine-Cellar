@@ -357,109 +357,237 @@ try {
 include __DIR__ . '/../includes/header.php';
 ?>
 
-<h1><?= htmlspecialchars($cata['titulo'] ?? 'Tasting') ?></h1>
+<?php
+  $totalCollectors = (int)$confirmedCollectors + (int)$waitlistCollectors;
 
-<?php if ($flashSuccess): ?>
-    <p class="success"><?= htmlspecialchars($flashSuccess) ?></p>
-<?php endif; ?>
+  $tStatus = $estadoCol ? trim((string)($cata[$estadoCol] ?? '')) : '';
+  $tStatusLower = strtolower($tStatus);
 
-<?php if ($flashError): ?>
-    <p class="error"><?= htmlspecialchars($flashError) ?></p>
-<?php endif; ?>
+  // badge para status "bonito"
+  $statusBadgeClass = 'badge badge-ghost';
+  if ($tStatusLower) {
+    if (in_array($tStatusLower, ['open','abierta','confirmada','confirmed','programada','scheduled'], true)) $statusBadgeClass = 'badge badge-status--open';
+    if (in_array($tStatusLower, ['pending','pendiente'], true)) $statusBadgeClass = 'badge badge-status--needs';
+    if (in_array($tStatusLower, ['full','completa','llena'], true)) $statusBadgeClass = 'badge badge-status--full';
+  }
 
-<div class="cata-info">
-    <p><strong>📅 Date:</strong> <?= htmlspecialchars($fechaFmt) ?></p>
-    <p><strong>📍 Location:</strong> <?= htmlspecialchars($cata[$locCol] ?? '-') ?></p>
+  // badge para sommelier
+  $somBadgeClass = !$assignedSommelier ? 'badge badge-status--needs' : ($sommelierConfirmed ? 'badge badge-status--open' : 'badge badge-status--needs');
+  $somBadgeText  = !$assignedSommelier ? 'Not assigned' : ($sommelierConfirmed ? 'Confirmed' : 'Pending');
+?>
 
-    <p><strong>👨‍🍳 Assigned sommelier:</strong>
-        <?php if (!$assignedSommelier): ?>
-            <span style="color:#666;">Not assigned yet</span>
-        <?php else: ?>
-            <?= htmlspecialchars($assignedSommelier['sommelier_nombre'] ?? 'Sommelier') ?>
-            <span style="color:#666;">(<?= htmlspecialchars($assignedSommelier['sommelier_status'] ?? '-') ?>)</span>
-        <?php endif; ?>
-    </p>
+<section class="admin-hero">
+  <div class="admin-shell">
 
-    <?php if ($estadoCol): ?>
-        <p><strong>Status:</strong> <?= htmlspecialchars($cata[$estadoCol] ?? '-') ?></p>
-    <?php endif; ?>
+    <div class="admin-head">
+      <div class="admin-kicker">Administration</div>
 
-    <hr style="margin:12px 0; opacity:.25;">
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap;">
+        <div>
+          <h1 class="admin-title"><?= htmlspecialchars($cata['titulo'] ?? 'Tasting') ?></h1>
+          <p class="admin-subtitle">Details, assigned sommelier, collectors, and wines for this tasting.</p>
+        </div>
 
-    <p><strong>👥 Collectors:</strong> <?= (int)$confirmedCollectors ?> confirmed / <?= (int)($confirmedCollectors + $waitlistCollectors) ?> total</p>
-    <p><strong>🪑 Available spots now:</strong> <?= (int)$freeSpots ?> (max <?= (int)$maxParticipants ?>)</p>
+        <div class="tasting-badges">
+          <span class="badge badge-ghost">ID #<?= (int)$tastingId ?></span>
+          <?php if ($tStatus): ?>
+            <span class="<?= $statusBadgeClass ?>"><?= htmlspecialchars($tStatus) ?></span>
+          <?php endif; ?>
+        </div>
+      </div>
 
-    <?php if (!$sommelierConfirmed): ?>
-        <p style="color:#b45309; font-weight:600;">
-            Sommelier confirmation is pending. Collectors will be placed on the waiting list until it is confirmed.
-        </p>
-    <?php endif; ?>
-
-    <?php if (!empty($cata['descripcion'])): ?>
-        <p><strong>Description:</strong><br><?= nl2br(htmlspecialchars($cata['descripcion'])) ?></p>
-    <?php endif; ?>
-</div>
-
-<?php if (($userRole ?? '') === 'admin'): ?>
-    <h2>Admin actions</h2>
-    <form method="post" onsubmit="return confirm('Delete this tasting permanently? This will also remove related signups and wines.');" style="margin: 10px 0;">
-        <button type="submit" name="action" value="admin_delete_tasting" class="btn btn-danger">
-            Delete tasting
-        </button>
-    </form>
-<?php endif; ?>
-
-<?php if ($assignedSommelier && (int)$assignedSommelier['sommelier_id'] === $uid && $sommelierPending): ?>
-    <h2>Sommelier confirmation</h2>
-    <form method="post" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-        <button type="submit" name="action" value="sommelier_accept" class="btn btn-primary">Accept tasting</button>
-        <button type="submit" name="action" value="sommelier_decline" class="btn btn-secondary">Decline</button>
-    </form>
-<?php endif; ?>
-
-<?php if (!empty($vinos)): ?>
-    <h2>Wines to taste</h2>
-    <div class="vinos-cata">
-        <?php foreach ($vinos as $vino): ?>
-            <div class="vino-item">
-                <?php
-                    $orden = $vino['orden_degustacion'] ?? null;
-                    $ordenTxt = ($orden !== null && $orden !== '') ? ((int)$orden . '. ') : '';
-                ?>
-                <h4><?= htmlspecialchars($ordenTxt . ($vino['nombre'] ?? 'Wine')) ?></h4>
-                <p><?= htmlspecialchars(($vino['tipo'] ?? '') . ' - ' . ($vino['annada'] ?? '')) ?></p>
-                <?php if (!empty($vino['notas_cata'])): ?>
-                    <p><em><?= htmlspecialchars($vino['notas_cata']) ?></em></p>
-                <?php endif; ?>
-            </div>
-        <?php endforeach; ?>
+      <div class="admin-actions" style="margin-top:14px;">
+        <a href="tastings.php" class="btn btn-ghost btn-sm">← Back to tastings list</a>
+      </div>
     </div>
-<?php endif; ?>
 
-<?php if ($userRole === 'coleccionista'): ?>
-    <h2>Your registration</h2>
+    <?php if ($flashSuccess): ?>
+      <div class="notice notice-success"><?= htmlspecialchars($flashSuccess) ?></div>
+    <?php endif; ?>
+    <?php if ($flashError): ?>
+      <div class="notice notice-error"><?= htmlspecialchars($flashError) ?></div>
+    <?php endif; ?>
 
-    <?php if ($myCollector): ?>
-        <?php $st = strtolower((string)($myCollector['status'] ?? '')); ?>
-        <?php if (in_array($st, ['confirmed','confirmado'], true)): ?>
-            <p style="color: green; font-weight: bold;">✓ You are registered (confirmed)</p>
-        <?php elseif (in_array($st, ['waitlist','lista_espera','lista de espera','espera'], true)): ?>
-            <p style="color: #b45309; font-weight: bold;">🕓 You are on the waiting list</p>
-        <?php else: ?>
-            <p><strong>Your status:</strong> <?= htmlspecialchars($myCollector['status'] ?? '-') ?></p>
+    <div class="tasting-grid">
+
+      <!-- LEFT: info + wines -->
+      <div class="form-card">
+
+        <div class="tasting-meta">
+          <div class="tasting-meta__item">
+            <span class="tasting-meta__icon">📅</span>
+            <span><b>Date</b>&nbsp;&nbsp;<?= htmlspecialchars($fechaFmt) ?></span>
+          </div>
+
+          <div class="tasting-meta__item">
+            <span class="tasting-meta__icon">📍</span>
+            <span><b>Location</b>&nbsp;&nbsp;<?= htmlspecialchars($cata[$locCol] ?? '-') ?></span>
+          </div>
+
+          <div class="tasting-meta__item">
+            <span class="tasting-meta__icon">👨‍🍳</span>
+            <span>
+              <b>Sommelier</b>&nbsp;&nbsp;
+              <?php if (!$assignedSommelier): ?>
+                <span style="color: rgba(43,15,20,70);">Not assigned yet</span>
+              <?php else: ?>
+                <?= htmlspecialchars($assignedSommelier['sommelier_nombre'] ?? 'Sommelier') ?>
+              <?php endif; ?>
+              &nbsp;&nbsp;<span class="<?= $somBadgeClass ?>"><?= htmlspecialchars($somBadgeText) ?></span>
+            </span>
+          </div>
+
+          <div class="tasting-meta__item">
+            <span class="tasting-meta__icon">👥</span>
+            <span><b>Collectors</b>&nbsp;&nbsp;<?= (int)$confirmedCollectors ?> confirmed / <?= (int)$totalCollectors ?> total</span>
+          </div>
+        </div>
+
+        <div class="tasting-kpis">
+          <div class="tasting-kpi">
+            <div class="tasting-kpi__label">Confirmed</div>
+            <div class="tasting-kpi__value"><?= (int)$confirmedCollectors ?></div>
+          </div>
+          <div class="tasting-kpi">
+            <div class="tasting-kpi__label">Total</div>
+            <div class="tasting-kpi__value"><?= (int)$totalCollectors ?></div>
+          </div>
+          <div class="tasting-kpi">
+            <div class="tasting-kpi__label">Available spots</div>
+            <div class="tasting-kpi__value"><?= $sommelierConfirmed ? (int)$freeSpots : 0 ?></div>
+          </div>
+        </div>
+
+        <?php if (!$sommelierConfirmed): ?>
+          <div class="alert alert-warn">
+            Sommelier confirmation is pending. Collectors will be placed on the waiting list until it is confirmed.
+          </div>
         <?php endif; ?>
 
-        <form method="post" style="margin-top: 10px;">
-            <button type="submit" name="action" value="collector_cancel" class="btn btn-secondary">Cancel registration</button>
-        </form>
+        <?php if (!empty($cata['descripcion'])): ?>
+          <p class="tasting-desc"><?= nl2br(htmlspecialchars($cata['descripcion'])) ?></p>
+        <?php endif; ?>
 
-    <?php else: ?>
-        <form method="post" style="margin-top: 10px;">
-            <button type="submit" name="action" value="collector_join" class="btn btn-primary">Register for this tasting</button>
-        </form>
-    <?php endif; ?>
-<?php endif; ?>
+        <?php if (!empty($vinos)): ?>
+          <div class="divider"></div>
 
-<p><a href="tastings.php">← Back to tastings list</a></p>
+          <div class="tasting-section">
+            <div class="section-head">
+              <h2 class="section-title">Wines to taste</h2>
+              <p class="section-subtitle">Order and basic info at a glance.</p>
+            </div>
+
+            <div class="wine-list">
+              <?php foreach ($vinos as $vino): ?>
+                <?php
+                  $orden = $vino['orden_degustacion'] ?? null;
+                  $ordenNum = ($orden !== null && $orden !== '') ? (int)$orden : null;
+                  $tipo = trim((string)($vino['tipo'] ?? ''));
+                  $annada = trim((string)($vino['annada'] ?? ''));
+                ?>
+                <div class="wine-item">
+                  <div class="pill" style="padding:8px 10px; border-radius:14px; text-align:center; font-weight:900;">
+                    <?= $ordenNum ? $ordenNum : '•' ?>
+                  </div>
+
+                  <div class="wine-thumb wine-thumb--ph">🍷</div>
+
+                  <div>
+                    <div class="wine-top">
+                      <div class="wine-name"><?= htmlspecialchars($vino['nombre'] ?? 'Wine') ?></div>
+                      <div class="wine-badges">
+                        <?php if ($tipo): ?><span class="badge badge-ghost"><?= htmlspecialchars($tipo) ?></span><?php endif; ?>
+                        <?php if ($annada): ?><span class="badge badge-ghost"><?= htmlspecialchars($annada) ?></span><?php endif; ?>
+                      </div>
+                    </div>
+
+                    <?php if (!empty($vino['notas_cata'])): ?>
+                      <div class="wine-note">
+                        <div class="section-subtitle">Notes</div>
+                        <div><?= htmlspecialchars($vino['notas_cata']) ?></div>
+                      </div>
+                    <?php endif; ?>
+                  </div>
+                </div>
+              <?php endforeach; ?>
+            </div>
+          </div>
+        <?php endif; ?>
+
+      </div>
+
+      <!-- RIGHT: actions -->
+      <aside class="form-card">
+
+        <div class="section-head">
+          <h2 class="section-title">Actions</h2>
+          <p class="section-subtitle">Manage this tasting based on your role.</p>
+        </div>
+
+        <?php if (($userRole ?? '') === 'admin'): ?>
+          <form method="post"
+                onsubmit="return confirm('Delete this tasting permanently? This will also remove related signups and wines.');"
+                style="margin: 6px 0 14px;">
+            <button type="submit" name="action" value="admin_delete_tasting" class="btn" style="width:100%; justify-content:center;">
+              🗑️ Delete tasting
+            </button>
+          </form>
+        <?php endif; ?>
+
+        <?php if ($assignedSommelier && (int)$assignedSommelier['sommelier_id'] === $uid && $sommelierPending): ?>
+          <div class="divider"></div>
+          <div class="section-head" style="margin-top: 2px;">
+            <h3 class="section-title" style="font-size:16px;">Sommelier confirmation</h3>
+            <p class="section-subtitle">Accept or decline this tasting.</p>
+          </div>
+
+          <form method="post" style="display:grid; gap:10px;">
+            <button type="submit" name="action" value="sommelier_accept" class="btn">✅ Accept tasting</button>
+            <button type="submit" name="action" value="sommelier_decline" class="btn btn-secondary">Decline</button>
+          </form>
+        <?php endif; ?>
+
+        <?php if ($userRole === 'coleccionista'): ?>
+          <div class="divider"></div>
+          <div class="section-head" style="margin-top: 2px;">
+            <h3 class="section-title" style="font-size:16px;">Your registration</h3>
+            <p class="section-subtitle">Join or cancel your spot.</p>
+          </div>
+
+          <?php if ($myCollector): ?>
+            <?php $st = strtolower((string)($myCollector['status'] ?? '')); ?>
+            <?php if (in_array($st, ['confirmed','confirmado'], true)): ?>
+              <div class="notice notice-success">✓ You are registered (confirmed)</div>
+            <?php elseif (in_array($st, ['waitlist','lista_espera','lista de espera','espera'], true)): ?>
+              <div class="notice" style="border-color: rgba(211,160,74,35); background: rgba(211,160,74,10);">
+                🕓 You are on the waiting list
+              </div>
+            <?php else: ?>
+              <div class="notice">Your status: <?= htmlspecialchars($myCollector['status'] ?? '-') ?></div>
+            <?php endif; ?>
+
+            <form method="post" style="margin-top: 10px;">
+              <button type="submit" name="action" value="collector_cancel" class="btn btn-secondary" style="width:100%; justify-content:center;">
+                Cancel registration
+              </button>
+            </form>
+
+          <?php else: ?>
+            <form method="post" style="margin-top: 10px;">
+              <button type="submit" name="action" value="collector_join" class="btn" style="width:100%; justify-content:center;">
+                Register for this tasting
+              </button>
+            </form>
+          <?php endif; ?>
+        <?php endif; ?>
+
+        <div class="divider"></div>
+        <a href="tastings.php" class="btn btn-ghost btn-sm" style="width:100%;">← Back to tastings list</a>
+
+      </aside>
+
+    </div>
+  </div>
+</section>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>

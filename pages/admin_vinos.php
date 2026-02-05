@@ -59,68 +59,106 @@ $vinos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 include __DIR__ . '/../includes/header.php';
 ?>
 
-<h1>Manage wines</h1>
+<section class="admin-hero">
+  <div class="admin-shell">
+    <div class="admin-head">
+      <div class="admin-kicker">Administration</div>
+      <h1 class="admin-title">Manage wines</h1>
+      <p class="admin-subtitle">Create, edit, and delete wines. Check denomination, optimal window, aging status, price, and stock at a glance.</p>
 
-<?php if ($message): ?>
-    <p style="color: green;"><?= htmlspecialchars($message) ?></p>
-<?php endif; ?>
+      <div class="admin-actions" style="margin-top: 14px;">
+        <a class="btn btn-sm" href="<?= BASE_URL ?>/pages/admin_vino_form.php">+ Add new wine</a>
+        <a class="btn btn-sm btn-ghost" href="<?= BASE_URL ?>/pages/admin_panel.php">← Back to admin panel</a>
+      </div>
+    </div>
 
-<?php if ($error): ?>
-    <p style="color: red;"><?= htmlspecialchars($error) ?></p>
-<?php endif; ?>
+    <?php if ($message): ?>
+      <div class="notice notice-success"><?= htmlspecialchars($message) ?></div>
+    <?php endif; ?>
 
-<p>
-    <a href="<?= BASE_URL ?>/pages/admin_vino_form.php">+ Add new wine</a>
-</p>
+    <?php if ($error): ?>
+      <div class="notice notice-error"><?= htmlspecialchars($error) ?></div>
+    <?php endif; ?>
 
-<table>
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Winery</th>
-        <th>Vintage</th>
-        <th>Type</th>
-        <th>Country</th>
-        <th>Denomination</th>
-        <th>Optimal window</th>
-        <th>Aging status</th>
-        <th>Price (€)</th>
-        <th>Stock</th>
-        <th>Actions</th>
-        
-    </tr>
-    </thead>
-    <tbody>
-    <?php foreach ($vinos as $vino): ?>
-       <tr>
-  <td><?= htmlspecialchars($vino['id_vino']) ?></td>
-  <td><?= htmlspecialchars($vino['nombre']) ?></td>
-  <td><?= htmlspecialchars($vino['bodega']) ?></td>
-  <td><?= htmlspecialchars($vino['annada']) ?></td>
-  <td><?= htmlspecialchars($vino['tipo']) ?></td>
-  <td><?= htmlspecialchars($vino['pais']) ?></td>
-  <td><?= !empty($vino['denomination']) ? htmlspecialchars(denomLabel($vino['denomination'])) : '-' ?></td>
-  <td>
-    <?= htmlspecialchars($vino['ventana_optima_inicio']) ?> – <?= htmlspecialchars($vino['ventana_optima_fin']) ?>
-  </td>
-  <td><?= htmlspecialchars($vino['aging_status'] ?? 'Unknown') ?></td>
-  <td><?= number_format((float)$vino['precio'], 2) ?> €</td>
-  <td><?= (int)$vino['stock'] ?></td>
-  <td>
-    <a href="<?= BASE_URL ?>/pages/admin_vino_form.php?id_vino=<?= (int)$vino['id_vino'] ?>">Edit</a>
+    <div class="table-wrap">
+      <table class="wines-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Winery</th>
+            <th>Vintage</th>
+            <th>Type</th>
+            <th>Country</th>
+            <th>Denomination</th>
+            <th>Optimal window</th>
+            <th>Aging status</th>
+            <th>Price (€)</th>
+            <th>Stock</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php foreach ($vinos as $vino): ?>
+            <?php
+              $aging = $vino['aging_status'] ?? 'Unknown';
+              $agingClass = 'badge-aging--unknown';
+              if ($aging === 'In window') $agingClass = 'badge-aging--good';
+              elseif ($aging === 'Too young') $agingClass = 'badge-aging--young';
+              elseif ($aging === 'Past window') $agingClass = 'badge-aging--old';
 
-    <form method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this wine?');">
-      <input type="hidden" name="id_vino" value="<?= (int)$vino['id_vino'] ?>">
-      <button type="submit" name="action" value="delete">Delete</button>
-    </form>
-  </td>
-</tr>
+              $stockVal = (int)($vino['stock'] ?? 0);
+              $stockClass = $stockVal > 0 ? 'badge-stock--in' : 'badge-stock--out';
 
-    <?php endforeach; ?>
-    </tbody>
-</table>
+              $winStart = $vino['ventana_optima_inicio'];
+              $winEnd   = $vino['ventana_optima_fin'];
+              $windowText = ($winStart !== null && $winEnd !== null && $winStart !== '' && $winEnd !== '')
+                ? (htmlspecialchars($winStart) . " – " . htmlspecialchars($winEnd))
+                : '–';
 
-<p><a href="<?= BASE_URL ?>/pages/admin_panel.php">Back to admin panel</a></p>
+              $denom = !empty($vino['denomination']) ? denomLabel($vino['denomination']) : '–';
+            ?>
+            <tr>
+              <td><?= (int)$vino['id_vino'] ?></td>
+              <td><strong><?= htmlspecialchars($vino['nombre']) ?></strong></td>
+              <td><?= htmlspecialchars($vino['bodega']) ?></td>
+              <td><?= htmlspecialchars($vino['annada']) ?></td>
+              <td><?= htmlspecialchars($vino['tipo']) ?></td>
+              <td><?= htmlspecialchars($vino['pais']) ?></td>
+              <td>
+                <?php if ($denom !== '–'): ?>
+                  <span class="badge badge-denom"><?= htmlspecialchars($denom) ?></span>
+                <?php else: ?>
+                  –
+                <?php endif; ?>
+              </td>
+              <td class="cell-mono"><?= $windowText ?></td>
+              <td><span class="badge <?= $agingClass ?>"><?= htmlspecialchars($aging) ?></span></td>
+              <td class="cell-mono"><?= number_format((float)$vino['precio'], 2) ?> €</td>
+              <td>
+                <span class="badge <?= $stockClass ?>"><?= $stockVal ?><?= $stockVal === 1 ? ' bottle' : ' bottles' ?></span>
+              </td>
+              <td>
+                <div class="table-actions">
+                  <a class="btn btn-secondary btn-sm"
+                     href="<?= BASE_URL ?>/pages/admin_vino_form.php?id_vino=<?= (int)$vino['id_vino'] ?>">
+                    Edit
+                  </a>
+
+                  <form method="post" class="inline-form"
+                        onsubmit="return confirm('Are you sure you want to delete this wine?');">
+                    <input type="hidden" name="id_vino" value="<?= (int)$vino['id_vino'] ?>">
+                    <button class="btn btn-danger btn-sm" type="submit" name="action" value="delete">Delete</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>

@@ -216,60 +216,81 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 
-<h2>Register</h2>
+<div class="auth-hero">
+  <div class="auth-card auth-card-lg">
+    <div class="auth-kicker">Wine Cellar</div>
+    <h2 class="auth-title">Create your account</h2>
+    <p class="auth-subtitle">Register as a collector or request a sommelier account.</p>
 
-<?php if (!empty($errores)): ?>
-    <div class="errores">
-        <?php foreach ($errores as $e): ?>
-            <p class="error"><?= htmlspecialchars($e) ?></p>
-        <?php endforeach; ?>
-    </div>
-<?php endif; ?>
+    <?php if (!empty($errores)): ?>
+      <?php foreach ($errores as $e): ?>
+        <div class="alert alert-error" role="alert"><?= htmlspecialchars($e) ?></div>
+      <?php endforeach; ?>
+    <?php endif; ?>
 
-<form method="post" id="formRegistro" enctype="multipart/form-data">
-    <label>Name<br>
-        <input type="text" name="nombre" required>
-    </label>
-    <br><br>
+    <form method="post" id="formRegistro" enctype="multipart/form-data" class="auth-form auth-form-grid" novalidate>
 
-    <label>Email<br>
-        <input type="email" name="email" required>
-    </label>
-    <br><br>
+      <div class="field">
+        <label for="reg_name">Name</label>
+        <input id="reg_name" type="text" name="nombre"
+               value="<?= htmlspecialchars($_POST['nombre'] ?? '') ?>"
+               placeholder="Your name" required>
+      </div>
 
-    <label>Password<br>
-        <input type="password" name="password" required>
-    </label>
-    <br><br>
+      <div class="field">
+        <label for="reg_email">Email</label>
+        <input id="reg_email" type="email" name="email"
+               value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"
+               placeholder="you@example.com" required>
+      </div>
 
-    <p>User type:</p>
-    <label>
-        <input type="radio" name="rol" value="coleccionista" checked>
-        Collector
-    </label>
-    <label>
-        <input type="radio" name="rol" value="sommelier">
-        Sommelier
-    </label>
-    <br><br>
+      <div class="field">
+        <label for="reg_password">Password</label>
+        <input id="reg_password" type="password" name="password"
+               placeholder="Create a password" required>
+      </div>
 
-    <div id="sommelier-description-wrapper" style="display: none;">
-        <label>Sommelier description (optional)<br>
-            <textarea name="sommelier_description" rows="4" cols="40"
-                      placeholder="Describe your skills and background as a sommelier..."></textarea>
-        </label>
-        <br><br>
+      <div class="field">
+        <label>User type</label>
+        <div class="segmented">
+          <label class="seg-item">
+            <input type="radio" name="rol" value="coleccionista" <?= (($_POST['rol'] ?? 'coleccionista') === 'coleccionista') ? 'checked' : '' ?>>
+            Collector
+          </label>
+          <label class="seg-item">
+            <input type="radio" name="rol" value="sommelier" <?= (($_POST['rol'] ?? '') === 'sommelier') ? 'checked' : '' ?>>
+            Sommelier
+          </label>
+        </div>
+      </div>
 
-        <label>Upload certification documents (required)<br>
-            <input type="file" name="cert_docs[]" id="cert_docs"
-                   accept="application/pdf,image/jpeg,image/png" multiple>
-        </label>
-        <p style="margin-top:6px; font-size:0.9em;">Accepted: PDF, JPG, PNG. Max 5 files, 10MB each.</p>
-        <br><br>
-    </div>
+      <div id="sommelier-description-wrapper" style="display:none; grid-column: 1 / -1;">
+        <div class="field">
+          <label for="som_desc">Sommelier description (optional)</label>
+          <textarea id="som_desc" name="sommelier_description" rows="4"
+                    placeholder="Describe your skills and background..."><?= htmlspecialchars($_POST['sommelier_description'] ?? '') ?></textarea>
+        </div>
 
-    <button type="submit">Register</button>
-</form>
+        <div class="field">
+          <label for="cert_docs">Upload certification documents (required)</label>
+          <input type="file" name="cert_docs[]" id="cert_docs"
+                 accept="application/pdf,image/jpeg,image/png" multiple>
+          <div class="help">Accepted: PDF, JPG, PNG. Max 5 files, 10MB each.</div>
+        </div>
+      </div>
+
+      <div class="auth-actions" style="grid-column: 1 / -1;">
+        <button type="submit" class="btn btn-lg">Create account</button>
+      </div>
+
+      <div class="auth-links" style="grid-column: 1 / -1;">
+        Already have an account?
+        <a href="<?= BASE_URL ?>/pages/login.php">Log in</a>
+      </div>
+
+    </form>
+  </div>
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {

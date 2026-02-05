@@ -6,7 +6,6 @@ include __DIR__ . '/../includes/header.php';
 
 // Solo admins
 if (!isset($_SESSION['usuario']) || $_SESSION['usuario']['rol'] !== 'admin') {
-    // si no es admin, fuera
     header('Location: login.php');
     exit;
 }
@@ -15,23 +14,96 @@ if (!isset($_SESSION['usuario']) || $_SESSION['usuario']['rol'] !== 'admin') {
 $usuarioNombre = $_SESSION['usuario']['nombre'] ?? 'admin';
 ?>
 
-<h1>Panel de administración</h1>
-<p>Hola, <?= htmlspecialchars($usuarioNombre) ?> (admin)</p>
+<div class="admin-hero">
+  <section class="admin-shell">
+    <div class="admin-head">
+      <div class="admin-kicker">Admin</div>
+      <h1 class="admin-title">Administration panel</h1>
+      <p class="admin-subtitle">Hello, <?= htmlspecialchars($usuarioNombre) ?> (admin)</p>
+    </div>
 
-<nav>
-    <ul>
-        <li><a href="admin_usuarios.php">Manage users</a></li>
-        <li><a href="admin_usuario_new.php">New user</a></li>
-        <li><a href="admin_vinos.php">Manage wines</a></li>
-        <li><a href="admin_vino_form.php">New wine</a></li>
-        <li><a href="admin_compras.php">Purchase history</a></li>
-        <li><a href="admin_tastings.php">Manage tastings</a></li>
-        <li><a href="admin_sommelier_certifications.php">Sommelier certifications</a></li>
-        <li><a href="admin_reports.php">Reports</a></li>
+    <div class="admin-grid">
+      <div class="admin-tile">
+        <div class="admin-tile-top">
+          <div class="admin-icon">👤</div>
+          <div>
+            <div class="admin-tile-title">Users</div>
+            <div class="admin-tile-desc">Manage accounts, roles and access.</div>
+          </div>
+        </div>
+        <div class="admin-actions">
+          <a class="btn btn-sm" href="admin_usuarios.php">Manage</a>
+          <a class="btn btn-sm btn-ghost" href="admin_usuario_new.php">New user</a>
+        </div>
+      </div>
 
+      <div class="admin-tile">
+        <div class="admin-tile-top">
+          <div class="admin-icon">🍷</div>
+          <div>
+            <div class="admin-tile-title">Wines</div>
+            <div class="admin-tile-desc">Catalog, pricing, stock and images.</div>
+          </div>
+        </div>
+        <div class="admin-actions">
+          <a class="btn btn-sm" href="admin_vinos.php">Manage</a>
+          <a class="btn btn-sm btn-ghost" href="admin_vino_form.php">New wine</a>
+        </div>
+      </div>
 
+      <div class="admin-tile">
+        <div class="admin-tile-top">
+          <div class="admin-icon">🧾</div>
+          <div>
+            <div class="admin-tile-title">Purchase history</div>
+            <div class="admin-tile-desc">Orders, payment status and totals.</div>
+          </div>
+        </div>
+        <div class="admin-actions">
+          <a class="btn btn-sm" href="admin_compras.php">Open</a>
+        </div>
+      </div>
 
-    </ul>
-</nav>
+      <div class="admin-tile">
+        <div class="admin-tile-top">
+          <div class="admin-icon">📅</div>
+          <div>
+            <div class="admin-tile-title">Tastings</div>
+            <div class="admin-tile-desc">Create events, manage signups and wines.</div>
+          </div>
+        </div>
+        <div class="admin-actions">
+          <a class="btn btn-sm" href="admin_tastings.php">Manage</a>
+        </div>
+      </div>
+
+      <div class="admin-tile">
+        <div class="admin-tile-top">
+          <div class="admin-icon">🎓</div>
+          <div>
+            <div class="admin-tile-title">Sommelier certifications</div>
+            <div class="admin-tile-desc">Review and validate uploaded documents.</div>
+          </div>
+        </div>
+        <div class="admin-actions">
+          <a class="btn btn-sm" href="admin_sommelier_certifications.php">Review</a>
+        </div>
+      </div>
+
+      <div class="admin-tile">
+        <div class="admin-tile-top">
+          <div class="admin-icon">📊</div>
+          <div>
+            <div class="admin-tile-title">Reports</div>
+            <div class="admin-tile-desc">KPIs and summaries for the platform.</div>
+          </div>
+        </div>
+        <div class="admin-actions">
+          <a class="btn btn-sm" href="admin_reports.php">View</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>

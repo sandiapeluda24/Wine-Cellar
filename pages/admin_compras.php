@@ -149,135 +149,132 @@ foreach ($ventas as $v) {
 include __DIR__ . '/../includes/header.php';
 ?>
 
-<h1>Admin · Ventas</h1>
 
-<form method="get" style="display:flex; gap:10px; align-items:center; margin: 12px 0 18px;">
-    <input
-        type="text"
-        name="q"
-        value="<?= htmlspecialchars($q) ?>"
-        placeholder="Buscar por comprador o vino…"
-        style="flex:1; padding:10px 12px; border:1px solid #ddd; border-radius:10px;"
-    >
-    <button type="submit" style="padding:10px 14px; border:0; border-radius:10px; cursor:pointer;">
-        Buscar
-    </button>
-    <?php if ($q !== ''): ?>
-        <a href="<?= htmlspecialchars($_SERVER['PHP_SELF']) ?>" style="padding:10px 14px; border:1px solid #ddd; border-radius:10px; text-decoration:none;">
-            Limpiar
-        </a>
-    <?php endif; ?>
-</form>
 
-<div style="display:flex; gap:14px; flex-wrap:wrap; margin-bottom: 14px;">
-    <div style="padding:12px 14px; border:1px solid #eee; border-radius:14px;">
-        <div style="font-size:12px; opacity:.7;">Pedidos</div>
-        <div style="font-size:18px; font-weight:700;"><?= count($ventas) ?></div>
+<section class="admin-hero">
+  <div class="admin-shell">
+    <div class="admin-head">
+      <div class="admin-kicker">Administration</div>
+      <h1 class="admin-title">Sales</h1>
+      <p class="admin-subtitle">Search orders by buyer or wine, and track totals at a glance.</p>
+
+      <form method="get" class="sales-search">
+        <input
+          class="sales-search__input"
+          type="text"
+          name="q"
+          value="<?= htmlspecialchars($q) ?>"
+          placeholder="Search by buyer or wine…"
+        >
+        <button class="btn btn-sm" type="submit">Search</button>
+
+        <?php if ($q !== ''): ?>
+          <a class="btn btn-sm btn-ghost" href="<?= htmlspecialchars($_SERVER['PHP_SELF']) ?>">Clear</a>
+        <?php endif; ?>
+      </form>
+
+      <div class="sales-stats">
+        <div class="sales-stat">
+          <div class="sales-stat__label">Orders</div>
+          <div class="sales-stat__value"><?= count($ventas) ?></div>
+        </div>
+        <div class="sales-stat">
+          <div class="sales-stat__label">Units</div>
+          <div class="sales-stat__value"><?= (int)$totalItems ?></div>
+        </div>
+        <div class="sales-stat">
+          <div class="sales-stat__label">Revenue</div>
+          <div class="sales-stat__value"><?= number_format($totalVentas, 2) ?> €</div>
+        </div>
+      </div>
+
+      <div class="admin-actions" style="margin-top: 14px;">
+        <a class="btn btn-sm btn-ghost" href="<?= BASE_URL ?>/pages/admin_panel.php">← Back to admin panel</a>
+      </div>
     </div>
-    <div style="padding:12px 14px; border:1px solid #eee; border-radius:14px;">
-        <div style="font-size:12px; opacity:.7;">Unidades</div>
-        <div style="font-size:18px; font-weight:700;"><?= (int)$totalItems ?></div>
-    </div>
-    <div style="padding:12px 14px; border:1px solid #eee; border-radius:14px;">
-        <div style="font-size:12px; opacity:.7;">Total vendido</div>
-        <div style="font-size:18px; font-weight:700;"><?= number_format($totalVentas, 2) ?> €</div>
-    </div>
-</div>
 
-<?php if (empty($ventas)): ?>
-    <p>No hay ventas todavía.</p>
-<?php else: ?>
-    <div style="overflow:auto; border:1px solid #eee; border-radius:16px;">
-        <table style="width:100%; border-collapse:collapse; min-width: 980px;">
-            <thead>
-                <tr style="background:#fafafa;">
-                    <th style="text-align:left; padding:12px; border-bottom:1px solid #eee;">Comprador</th>
-                    <th style="text-align:left; padding:12px; border-bottom:1px solid #eee;">Vino</th>
-                    <th style="text-align:right; padding:12px; border-bottom:1px solid #eee;">Cantidad</th>
-                    <th style="text-align:left; padding:12px; border-bottom:1px solid #eee;">Fecha</th>
-                    <th style="text-align:right; padding:12px; border-bottom:1px solid #eee;">Unitario</th>
-                    <th style="text-align:right; padding:12px; border-bottom:1px solid #eee;">Total</th>
-                    <th style="text-align:left; padding:12px; border-bottom:1px solid #eee;">Estado</th>
-                </tr>
-            </thead>
-            <tbody>
-            <?php foreach ($ventas as $row): ?>
-                <?php
-                    $unit = (float)($row['precio'] ?? 0);
-                    $total = (float)($row['total'] ?? 0);
+    <?php if (empty($ventas)): ?>
+      <div class="notice notice-error">No sales yet.</div>
+    <?php else: ?>
+      <div class="table-wrap">
+        <table class="sales-table">
+          <thead>
+            <tr>
+              <th>Buyer</th>
+              <th>Wine</th>
+              <th class="cell-right">Qty</th>
+              <th>Date</th>
+              <th class="cell-right">Unit</th>
+              <th class="cell-right">Total</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+          <?php foreach ($ventas as $row): ?>
+            <?php
+              $unit  = (float)($row['precio'] ?? 0);
+              $total = (float)($row['total'] ?? 0);
 
-                    $dt = $row['purchase_at'] ?? null;
-                    $fechaFmt = $dt ? date('d/m/Y H:i', strtotime($dt)) : '-';
+              $dt = $row['purchase_at'] ?? null;
+              $fechaFmt = $dt ? date('d/m/Y H:i', strtotime($dt)) : '-';
 
-                    $estado = $row['estado'] ?? 'pending';
-                    $statusText = ucfirst($estado);
-                    $badgeStyle = "display:inline-block; padding:6px 10px; border-radius:999px; font-size:12px; border:1px solid #ddd;";
+              $estado = $row['estado'] ?? 'pending';
+              $statusClass = 'status-pending';
+              $statusText  = 'Pending';
 
-                    if ($estado === 'pending')   { $badgeStyle .= " background:#fff7e6; border-color:#ffe3a3;"; $statusText = "Pending"; }
-                    if ($estado === 'shipped')   { $badgeStyle .= " background:#e8f0ff; border-color:#b6d0ff;"; $statusText = "Shipped"; }
-                    if ($estado === 'delivered') { $badgeStyle .= " background:#e9fbef; border-color:#bfe8c9;"; $statusText = "Delivered"; }
-                    if ($estado === 'cancelled') { $badgeStyle .= " background:#fff0f0; border-color:#ffc5c5;"; $statusText = "Cancelled"; }
+              if ($estado === 'shipped')   { $statusClass = 'status-shipped';   $statusText = 'Shipped'; }
+              if ($estado === 'delivered') { $statusClass = 'status-delivered'; $statusText = 'Delivered'; }
+              if ($estado === 'cancelled') { $statusClass = 'status-cancelled'; $statusText = 'Cancelled'; }
 
-                    $vino = $row['vino_nombre'] ?? '';
-                    $den  = $row['denominacion_nombre'] ?? '';
-                    $ann  = $row['annada'] ?? '';
-                    $tipo = $row['tipo'] ?? '';
+              $vino = $row['vino_nombre'] ?? '';
+              $den  = $row['denominacion_nombre'] ?? '';
+              $ann  = $row['annada'] ?? '';
+              $tipo = $row['tipo'] ?? '';
 
-                    $comprador = $row['comprador'] ?? ('Usuario #' . ($row['id_usuario'] ?? ''));
-                    $compradorEmail = $row['comprador_email'] ?? '';
-                ?>
-                <tr>
-                    <td style="padding:12px; border-bottom:1px solid #f1f1f1;">
-                        <div style="font-weight:600;"><?= htmlspecialchars($comprador) ?></div>
-                        <?php if (!empty($compradorEmail) && $compradorEmail !== $comprador): ?>
-                            <div style="font-size:12px; opacity:.7;"><?= htmlspecialchars($compradorEmail) ?></div>
-                        <?php endif; ?>
-                        <div style="font-size:12px; opacity:.6;">ID pedido: #<?= htmlspecialchars($row['id_compra']) ?></div>
-                    </td>
+              $comprador = $row['comprador'] ?? ('User #' . ($row['id_usuario'] ?? ''));
+              $compradorEmail = $row['comprador_email'] ?? '';
+            ?>
+            <tr>
+              <td>
+                <div class="buyer">
+                  <div class="buyer__name"><?= htmlspecialchars($comprador) ?></div>
+                  <?php if (!empty($compradorEmail) && $compradorEmail !== $comprador): ?>
+                    <div class="buyer__meta"><?= htmlspecialchars($compradorEmail) ?></div>
+                  <?php endif; ?>
+                  <div class="buyer__meta">Order ID: #<?= htmlspecialchars($row['id_compra']) ?></div>
+                </div>
+              </td>
 
-                    <td style="padding:12px; border-bottom:1px solid #f1f1f1;">
-                        <div style="display:flex; gap:10px; align-items:center;">
-                            <?php if (!empty($row['imagen'])): ?>
-                                <img src="<?= htmlspecialchars($row['imagen']) ?>" alt="" style="width:44px; height:44px; object-fit:cover; border-radius:10px; border:1px solid #eee;">
-                            <?php endif; ?>
-                            <div>
-                                <div style="font-weight:600;"><?= htmlspecialchars($vino) ?></div>
-                                <div style="font-size:12px; opacity:.7;">
-                                    <?= htmlspecialchars(trim("$tipo · $ann")) ?>
-                                    <?php if ($den): ?> · <?= htmlspecialchars($den) ?><?php endif; ?>
-                                </div>
-                            </div>
-                        </div>
-                    </td>
+              <td>
+                <div class="sale-wine">
+                  <?php if (!empty($row['imagen'])): ?>
+                    <img class="sale-wine__img" src="<?= htmlspecialchars($row['imagen']) ?>" alt="">
+                  <?php else: ?>
+                    <div class="sale-wine__img sale-wine__img--empty">🍷</div>
+                  <?php endif; ?>
 
-                    <td style="padding:12px; text-align:right; border-bottom:1px solid #f1f1f1;">
-                        <?= (int)($row['cantidad'] ?? 0) ?>
-                    </td>
+                  <div>
+                    <div class="sale-wine__name"><?= htmlspecialchars($vino) ?></div>
+                    <div class="sale-wine__meta">
+                      <?= htmlspecialchars(trim("$tipo · $ann")) ?>
+                      <?php if ($den): ?> · <?= htmlspecialchars($den) ?><?php endif; ?>
+                    </div>
+                  </div>
+                </div>
+              </td>
 
-                    <td style="padding:12px; border-bottom:1px solid #f1f1f1;">
-                        <?= htmlspecialchars($fechaFmt) ?>
-                    </td>
-
-                    <td style="padding:12px; text-align:right; border-bottom:1px solid #f1f1f1;">
-                        <?= number_format($unit, 2) ?> €
-                    </td>
-
-                    <td style="padding:12px; text-align:right; border-bottom:1px solid #f1f1f1;">
-                        <strong><?= number_format($total, 2) ?> €</strong>
-                    </td>
-
-                    <td style="padding:12px; border-bottom:1px solid #f1f1f1;">
-                        <span style="<?= $badgeStyle ?>"><?= htmlspecialchars($statusText) ?></span>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-            </tbody>
+              <td class="cell-right cell-mono"><?= (int)($row['cantidad'] ?? 0) ?></td>
+              <td class="cell-mono"><?= htmlspecialchars($fechaFmt) ?></td>
+              <td class="cell-right cell-mono"><?= number_format($unit, 2) ?> €</td>
+              <td class="cell-right cell-mono"><strong><?= number_format($total, 2) ?> €</strong></td>
+              <td><span class="<?= $statusClass ?>"><?= htmlspecialchars($statusText) ?></span></td>
+            </tr>
+          <?php endforeach; ?>
+          </tbody>
         </table>
-    </div>
-<?php endif; ?>
-
-<p style="margin-top:16px;">
-    <a href="<?= BASE_URL ?>/pages/admin.php">← Volver al panel admin</a>
-</p>
+      </div>
+    <?php endif; ?>
+  </div>
+</section>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>

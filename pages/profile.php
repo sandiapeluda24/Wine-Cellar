@@ -3,51 +3,89 @@ session_start();
 require_once __DIR__ . '/../includes/db.php';
 include __DIR__ . '/../includes/header.php';
 
-// Comprobar que hay usuario loggeado
 if (!isset($_SESSION['usuario'])) {
-    header('Location: login.php');
-    exit;
+  header('Location: login.php');
+  exit;
 }
 
-$db = getDB();
+$u = $_SESSION['usuario'];
+$nombre = $u['nombre'] ?? 'User';
+$email = $u['email'] ?? '';
+$rol = $u['rol'] ?? '';
+$created_at = $u['created_at'] ?? ($u['fechaIngreso'] ?? '');
+$certificado = isset($u['certificado']) ? (int)$u['certificado'] : null;
+$sommelier_desc = $u['sommelier_description'] ?? '';
 
-// ID que guardamos en la sesión al hacer login
-$idUsuario = $_SESSION['usuario']['id_usuario'] ?? null;
-
-if ($idUsuario === null) {
-    echo "<h1>Unable to load profile</h1>";
-    include __DIR__ . '/../includes/footer.php';
-    exit;
+function initials($name) {
+  $name = trim((string)$name);
+  if ($name === '') return 'U';
+  $parts = preg_split('/\s+/', $name);
+  $first = strtoupper(substr($parts[0], 0, 1));
+  $second = '';
+  if (count($parts) > 1) $second = strtoupper(substr($parts[count($parts)-1], 0, 1));
+  return $first . $second;
 }
-
-// Cargar datos completos desde la BD
-$stmt = $db->prepare("SELECT * FROM usuarios WHERE id_usuario = ?");
-$stmt->execute([$idUsuario]);
-$usuario = $stmt->fetch(PDO::FETCH_ASSOC);
-
-if (!$usuario) {
-    echo "<h1>Unable to load profile</h1>";
-    include __DIR__ . '/../includes/footer.php';
-    exit;
-}
+$ini = initials($nombre);
 ?>
 
-<h1>My profile</h1>
+<div class="profile-hero">
+  <section class="profile-shell">
+    <header class="profile-head">
+      <div class="profile-kicker">My account</div>
+      <h1 class="profile-title">My profile</h1>
+      <p class="profile-subtitle">Your personal details and account status.</p>
+    </header>
 
-<p><strong>Name:</strong> <?= htmlspecialchars($usuario['nombre']) ?></p>
-<p><strong>Email:</strong> <?= htmlspecialchars($usuario['email']) ?></p>
-<p><strong>Role:</strong> <?= htmlspecialchars($usuario['rol']) ?></p>
-<p><strong>Member since:</strong> <?= htmlspecialchars($usuario['created_at']) ?></p>
+    <div class="profile-card">
+      <div class="profile-top">
+        <div class="profile-avatar" aria-hidden="true"><?= htmlspecialchars($ini) ?></div>
+        <div class="profile-who">
+          <div class="profile-name"><?= htmlspecialchars($nombre) ?></div>
+          <div class="profile-email"><?= htmlspecialchars($email) ?></div>
+        </div>
 
-<?php if ($usuario['rol'] === 'sommelier'): ?>
-    <p><strong>Sommelier description:</strong><br>
-        <?= nl2br(htmlspecialchars($usuario['sommelier_description'] ?? '')) ?>
-    </p>
-<?php endif; ?>
+        <div class="profile-badges">
+          <span class="badge badge-role"><?= htmlspecialchars($rol ?: 'user') ?></span>
+          <?php if ($rol === 'sommelier' && $certificado !== null): ?>
+            <span class="badge <?= $certificado ? 'badge-ok' : 'badge-muted' ?>">
+              <?= $certificado ? 'Certified' : 'Not certified' ?>
+            </span>
+          <?php endif; ?>
+        </div>
+      </div>
 
-<?php if ((int)$usuario['is_active'] === 0): ?>
-    <p style="color:red;"><strong>Warning:</strong> Your account is currently deactivated.</p>
-<?php endif; ?>
+      <div class="profile-grid">
+        <div class="profile-kv">
+          <div class="profile-k">Name</div>
+          <div class="profile-v"><?= htmlspecialchars($nombre) ?></div>
+        </div>
+        <div class="profile-kv">
+          <div class="profile-k">Email</div>
+          <div class="profile-v"><?= htmlspecialchars($email) ?></div>
+        </div>
+        <div class="profile-kv">
+          <div class="profile-k">Role</div>
+          <div class="profile-v"><?= htmlspecialchars($rol) ?></div>
+        </div>
+        <div class="profile-kv">
+          <div class="profile-k">Member since</div>
+          <div class="profile-v"><?= htmlspecialchars($created_at ?: '-') ?></div>
+        </div>
 
+        <?php if ($rol === 'sommelier' && $sommelier_desc): ?>
+          <div class="profile-kv profile-kv-wide">
+            <div class="profile-k">Sommelier bio</div>
+            <div class="profile-v"><?= nl2br(htmlspecialchars($sommelier_desc)) ?></div>
+          </div>
+        <?php endif; ?>
+      </div>
+
+      <div class="profile-actions">
+        <a class="btn btn-ghost" href="/index.php">Back to home</a>
+        <a class="btn" href="/pages/logout.php">Log out</a>
+      </div>
+    </div>
+  </section>
+</div>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>

@@ -78,28 +78,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 include __DIR__ . '/../includes/header.php';
 ?>
 
-<h2>Login</h2>
+<div class="auth-hero">
+  <div class="auth-card">
+    <div class="auth-kicker">Wine Cellar</div>
+    <h2 class="auth-title">Welcome back</h2>
+    <p class="auth-subtitle">Sign in to manage your collection, tastings and purchases.</p>
 
-<?php foreach ($errores as $e): ?>
-    <p class="error"><?= htmlspecialchars($e) ?></p>
-<?php endforeach; ?>
+    <?php foreach ($errores as $e): ?>
+      <div class="alert alert-error" role="alert"><?= htmlspecialchars($e) ?></div>
+    <?php endforeach; ?>
 
-<?php if (!empty($loginError)): ?>
-    <p class="error"><?= htmlspecialchars($loginError) ?></p>
-<?php endif; ?>
+    <?php if (!empty($loginError)): ?>
+      <div class="alert alert-error" role="alert"><?= htmlspecialchars($loginError) ?></div>
+    <?php endif; ?>
 
-<form method="post" id="formLogin">
-    <label>Email:
-        <input type="email" name="email" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required>
-    </label>
-    <label>Password:
-        <input type="password" name="password" required>
-    </label>
-    <button type="submit">Login</button>
-</form>
+    <form method="post" id="formLogin" class="auth-form" novalidate>
+      <div class="field">
+        <label for="login_email">Email</label>
+        <input id="login_email" type="email" name="email"
+               value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"
+               placeholder="you@example.com" required>
+      </div>
 
-<p class="text-center">
-    Don't have an account? <a href="<?= BASE_URL ?>/pages/register.php">Register here</a>
-</p>
+      <div class="field">
+        <label for="login_password">Password</label>
+        <input id="login_password" type="password" name="password"
+               placeholder="Your password" required>
+      </div>
+
+      <div class="auth-actions">
+        <button type="submit" class="btn btn-lg">Log in</button>
+      </div>
+    </form>
+
+    <div class="auth-links">
+      Don't have an account?
+      <a href="<?= BASE_URL ?>/pages/register.php">Create one</a>
+    </div>
+  </div>
+</div>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>

@@ -528,3 +528,2142 @@ tr:hover td{ background: rgba(138,47,62,.045); }
   margin: 0 0 12px;
   color: rgba(43,15,20,.70);
 }
+
+/* =========================
+   AUTH (Login / Register)
+   ========================= */
+
+.auth-hero{
+  /* Works even if the page content is inside a centered container */
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+
+  min-height: calc(100vh - 64px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding: 44px 18px;
+
+  background-image:
+    linear-gradient(120deg, rgba(43,15,20,.82), rgba(43,15,20,.55)),
+    var(--hero-image);
+  background-size: cover;
+  background-position: center;
+  border-bottom: 1px solid rgba(255,255,255,.10);
+}
+
+.auth-card{
+  width: min(520px, 96vw);
+  background: rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 26px;
+  padding: 28px;
+  box-shadow: 0 26px 70px rgba(0,0,0,.22);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: rgba(255,255,255,.92);
+}
+
+.auth-card.auth-card-lg{ width: min(760px, 96vw); }
+
+.auth-kicker{
+  display:inline-flex;
+  align-items:center;
+  gap: 10px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  font-size: 12px;
+  color: rgba(255,255,255,.88);
+  margin-bottom: 10px;
+}
+
+.auth-kicker::before{
+  content:"";
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, var(--gold), #fff0 62%);
+  box-shadow: 0 0 0 5px rgba(211,160,74,.16);
+}
+
+.auth-title{
+  margin: 0 0 8px;
+  font-size: 32px;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.auth-subtitle{
+  margin: 0 0 18px;
+  color: rgba(255,255,255,.82);
+}
+
+.alert{
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.16);
+  background: rgba(0,0,0,.14);
+  margin: 10px 0;
+}
+
+.alert-error{
+  border-color: rgba(255, 140, 140, .35);
+  background: rgba(170, 30, 30, .18);
+}
+
+.auth-form{ display:grid; gap: 14px; }
+
+.auth-form.auth-form-grid{
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 16px;
+}
+
+@media (max-width: 760px){
+  .auth-form.auth-form-grid{ grid-template-columns: 1fr; }
+}
+.auth-hero .field{ display:flex; flex-direction:column; gap: 8px; }
+.auth-hero .field label{
+  font-size: 13px;
+  font-weight: 800;
+  color: rgba(255,255,255,.90);
+}
+.auth-hero .field input,
+.auth-hero .field textarea,
+.auth-hero .field select{
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(0,0,0,.16);
+  color: rgba(255,255,255,.92);
+}
+.auth-hero .field input::placeholder,
+.auth-hero .field textarea::placeholder{
+  color: rgba(255,255,255,.60);
+}
+.auth-hero .field input:focus,
+.auth-hero .field textarea:focus,
+.auth-hero .field select:focus{
+  outline: none;
+  border-color: rgba(211,160,74,.60);
+  box-shadow: 0 0 0 4px rgba(211,160,74,.18);
+  background: rgba(0,0,0,.22);
+}
+.auth-hero .field input[type="file"]{ padding: 10px 12px; }
+
+.help{
+  margin-top: 6px;
+  font-size: 13px;
+  color: rgba(255,255,255,.76);
+}
+
+.segmented{
+  display:flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.seg-item{
+  flex: 1;
+  min-width: 180px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.16);
+  background: rgba(0,0,0,.14);
+  cursor:pointer;
+  user-select:none;
+}
+
+.seg-item input{ accent-color: var(--gold); }
+
+.auth-actions{ margin-top: 6px; }
+.auth-actions .btn{ width: 100%; justify-content:center; }
+
+.auth-links{
+  margin-top: 14px;
+  text-align:center;
+  color: rgba(255,255,255,.80);
+}
+
+.auth-links a{
+  color: rgba(255,255,255,.95);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255,255,255,.28);
+  padding-bottom: 2px;
+}
+
+.auth-links a:hover{
+  border-bottom-color: rgba(211,160,74,.70);
+}
+
+/* TEST_AUTH_123 */
+/* =========================
+   AUTH fallback (works even with old HTML)
+   Centers #formLogin and #formRegistro automatically
+   ========================= */
+
+/* Page background + centering */
+body:has(#formLogin),
+body:has(#formRegistro){
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+
+  background-image:
+    linear-gradient(120deg, rgba(43,15,20,.82), rgba(43,15,20,.55)),
+    url('/img/hero.jpg');
+  background-size: cover;
+  background-position: center;
+}
+
+/* Card */
+#formLogin,
+#formRegistro{
+  width: min(520px, 96vw);
+  background: rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 26px;
+  padding: 28px;
+  box-shadow: 0 26px 70px rgba(0,0,0,.22);
+  backdrop-filter: blur(10px);
+  color: rgba(255,255,255,.92);
+}
+
+/* Register a bit wider + 2 columns */
+#formRegistro{
+  width: min(760px, 96vw);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 16px;
+}
+@media (max-width: 760px){
+  #formRegistro{ grid-template-columns: 1fr; }
+}
+
+/* Titles (if you have h2) */
+body:has(#formLogin) h2,
+body:has(#formRegistro) h2{
+  text-align: center;
+  font-size: 32px;
+  margin: 0 0 16px;
+  letter-spacing: -0.03em;
+  color: rgba(255,255,255,.95);
+}
+
+/* Labels/inputs */
+#formLogin label,
+#formRegistro label{
+  font-size: 13px;
+  font-weight: 800;
+  color: rgba(255,255,255,.90);
+}
+
+#formLogin input,
+#formRegistro input,
+#formRegistro textarea,
+#formRegistro select{
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(0,0,0,.16);
+  color: rgba(255,255,255,.92);
+}
+
+#formLogin input:focus,
+#formRegistro input:focus,
+#formRegistro textarea:focus,
+#formRegistro select:focus{
+  outline: none;
+  border-color: rgba(211,160,74,.60);
+  box-shadow: 0 0 0 4px rgba(211,160,74,.18);
+  background: rgba(0,0,0,.22);
+}
+
+/* Buttons */
+#formLogin button,
+#formRegistro button,
+#formLogin input[type="submit"],
+#formRegistro input[type="submit"]{
+  width: 100%;
+  margin-top: 6px;
+  padding: 12px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(211,160,74,.20);
+  color: rgba(255,255,255,.95);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+#formLogin button:hover,
+#formRegistro button:hover,
+#formLogin input[type="submit"]:hover,
+#formRegistro input[type="submit"]:hover{
+  background: rgba(211,160,74,.28);
+}
+
+/* ===== AUTH FORCE OVERRIDE (Login/Register) ===== */
+
+/* A veces <main class="contenido"> trae padding/width/display que fastidia */
+main.contenido{
+  width: 100% !important;
+  max-width: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: block !important;
+}
+
+/* Más específico que .auth-hero a secas, y con !important */
+main.contenido  .auth-hero{
+  width: 100vw !important;
+  margin-left: calc(50% - 50vw) !important;
+  margin-right: 0 !important;
+
+  min-height: calc(100vh - 64px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 44px 18px !important;
+
+  background-image:
+    linear-gradient(120deg, rgba(43,15,20,.82), rgba(43,15,20,.55)),
+    var(--hero-image, url("/img/hero.jpg")) !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+
+  border-bottom: 1px solid rgba(255,255,255,.10) !important;
+}
+
+main.contenido  .auth-hero  .auth-card{
+  width: min(520px, 96vw) !important;
+  padding: 28px !important;
+  border-radius: 26px !important;
+
+  background: rgba(255,255,255,.10) !important;
+  border: 1px solid rgba(255,255,255,.18) !important;
+  box-shadow: 0 26px 70px rgba(0,0,0,.22) !important;
+  backdrop-filter: blur(10px) !important;
+
+  color: rgba(255,255,255,.92) !important;
+}
+
+/* Inputs/botón por si algo te los deja “old school” */
+main.contenido .auth-hero .auth-form{ display: grid !important; gap: 14px !important; }
+
+main.contenido .auth-hero .field{ display:flex !important; flex-direction:column !important; gap:8px !important; }
+main.contenido .auth-hero .field label{ font-size:13px !important; font-weight:800 !important; color: rgba(255,255,255,.90) !important; }
+
+main.contenido .auth-hero .field input{
+  width:100% !important;
+  padding: 12px 14px !important;
+  border-radius: 14px !important;
+  border: 1px solid rgba(255,255,255,.18) !important;
+  background: rgba(0,0,0,.16) !important;
+  color: rgba(255,255,255,.92) !important;
+}
+
+main.contenido .auth-hero .field input:focus{
+  outline:none !important;
+  border-color: rgba(211,160,74,.60) !important;
+  box-shadow: 0 0 0 4px rgba(211,160,74,.18) !important;
+}
+
+main.contenido .auth-hero .auth-actions .btn{
+  width: 100% !important;
+  justify-content: center !important;
+}
+
+/* ===== FORCE LOGIN/REGISTER CENTERING ===== */
+
+/* Quita padding del <main class="contenido"> para que no empuje hacia abajo */
+.contenido{
+  padding: 0 !important;
+}
+
+/* Fuerza que el hero mida la pantalla y centre */
+.auth-hero{
+  width: 100vw !important;
+  margin-left: calc(50% - 50vw) !important;
+
+  height: calc(100vh - 64px) !important;   /* <- esto es clave */
+  min-height: calc(100vh - 64px) !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  padding: 44px 18px !important;
+
+  background-image:
+    linear-gradient(120deg, rgba(43,15,20,.82), rgba(43,15,20,.55)),
+    var(--hero-image) !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+
+  border-bottom: 1px solid rgba(255,255,255,.10) !important;
+}
+
+/* Fuerza la tarjeta */
+.auth-card{
+  width: min(520px, 96vw) !important;
+  background: rgba(255,255,255,.10) !important;
+  border: 1px solid rgba(255,255,255,.18) !important;
+  border-radius: 26px !important;
+  padding: 28px !important;
+  box-shadow: 0 26px 70px rgba(0,0,0,.22) !important;
+  backdrop-filter: blur(10px) !important;
+  color: rgba(255,255,255,.92) !important;
+}
+
+/* ===== AUTH: FORCE (Login/Register) ===== */
+
+main.contenido{
+  padding: 0 !important;        /* quita el padding que empuja */
+  flex: 1 !important;
+}
+
+/* El hero ocupa pantalla y centra la card */
+main.contenido .auth-hero{
+  width: 100vw !important;
+  margin-left: calc(50% - 50vw) !important;
+
+  height: calc(100vh - 64px) !important;   /* clave: altura real */
+  min-height: calc(100vh - 64px) !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  padding: 44px 18px !important;
+
+  background-image:
+    linear-gradient(120deg, rgba(43,15,20,.82), rgba(43,15,20,.55)),
+    var(--hero-image, url("/img/hero.jpg")) !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+
+  border-bottom: 1px solid rgba(255,255,255,.10) !important;
+}
+
+/* La tarjeta “pro” */
+main.contenido .auth-card{
+  width: min(520px, 96vw) !important;
+  background: rgba(255,255,255,.10) !important;
+  border: 1px solid rgba(255,255,255,.18) !important;
+  border-radius: 26px !important;
+  padding: 28px !important;
+  box-shadow: 0 26px 70px rgba(0,0,0,.22) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  color: rgba(255,255,255,.92) !important;
+}
+
+main.contenido .auth-hero .auth-form{ display:grid !important; gap:14px !important; }
+main.contenido .auth-hero .field{ display:flex !important; flex-direction:column !important; gap:8px !important; }
+
+main.contenido .auth-hero .field input{
+  width: 100% !important;
+  padding: 12px 14px !important;
+  border-radius: 14px !important;
+  border: 1px solid rgba(255,255,255,.18) !important;
+  background: rgba(0,0,0,.16) !important;
+  color: rgba(255,255,255,.92) !important;
+}
+
+main.contenido .auth-hero .field input:focus{
+  outline: none !important;
+  border-color: rgba(211,160,74,.60) !important;
+  box-shadow: 0 0 0 4px rgba(211,160,74,.18) !important;
+}
+
+main.contenido .auth-hero .auth-actions .btn{
+  width: 100% !important;
+  justify-content: center !important;
+}
+
+/* Fix: inputs inside the card (same padding left/right) */
+.auth-hero, .auth-hero * , .auth-hero *::before, .auth-hero *::after{
+  box-sizing: border-box !important;
+}
+
+.auth-card{
+  overflow: hidden; /* recorta cualquier pixel que se salga */
+}
+
+/* hace que el form tenga un “marco” y los inputs queden bien dentro */
+.auth-form{
+  width: 100% !important;
+  padding: 18px !important;
+  border-radius: 22px !important;
+  border: 1px solid rgba(255,255,255,.16) !important;
+  background: rgba(255,255,255,.06) !important;
+}
+.auth-hero .field{
+  width: 100% !important;
+}
+.auth-hero .field input{
+  width: 100% !important;
+  max-width: 100% !important;
+  display: block !important;
+}
+
+/* ===== AUTH: no scroll + footer visible + remove line ===== */
+/* Ajusta si tu navbar/footer tienen otra altura */
+:root{
+  --nav-h: 64px;
+  --footer-h: 56px;
+}
+
+/* Solo en páginas que tengan auth-hero (login/register) */
+body:has(.auth-hero){
+  overflow: hidden !important;
+}
+
+body:has(.auth-hero) main.contenido{
+  padding: 0 !important;
+}
+
+/* El hero ahora deja sitio real para el footer */
+body:has(.auth-hero) .auth-hero{
+  height: calc(100vh - var(--nav-h) - var(--footer-h)) !important;
+  min-height: calc(100vh - var(--nav-h) - var(--footer-h)) !important;
+
+  border-bottom: none !important;   /* quita la rayita */
+}
+
+/* Footer fijo en altura y sin línea */
+body:has(.auth-hero) footer{
+  height: var(--footer-h) !important;
+  margin: 0 !important;
+
+  border-top: none !important;
+  box-shadow: none !important;
+  background: transparent !important; /* si quieres que no “corte” con una franja */
+}
+
+/* =========================
+   WINES PAGE – Catalog UI
+   ========================= */
+
+.page-head{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap: 14px;
+  margin: 10px 0 14px;
+}
+
+.page-kicker{
+  display:inline-flex;
+  align-items:center;
+  gap: 10px;
+  color: rgba(43,15,20,.70);
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.page-kicker::before{
+  content:"";
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, var(--gold), #fff0 62%);
+  box-shadow: 0 0 0 5px rgba(211,160,74,.16);
+}
+
+.page-title{
+  margin: 0;
+  font-size: clamp(28px, 3.2vw, 40px);
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+.page-subtitle{
+  margin: 8px 0 0;
+  color: rgba(43,15,20,.70);
+  max-width: 72ch;
+}
+
+.notice{
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,.78);
+  box-shadow: 0 12px 30px rgba(0,0,0,.06);
+  margin: 12px 0;
+}
+.notice-success{ border-color: rgba(30,132,73,.22); background: rgba(233,251,240,.85); }
+.notice-error{ border-color: rgba(176,58,46,.25); background: rgba(253,231,229,.90); }
+
+.filters-card{
+  margin: 14px 0 16px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  background: rgba(255,255,255,.70);
+  box-shadow: 0 16px 44px rgba(0,0,0,.08);
+}
+
+.filters-grid{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 12px;
+  align-items:end;
+}
+
+@media (max-width: 820px){
+  .filters-grid{ grid-template-columns: 1fr; }
+}
+
+.filter-group label{
+  display:block;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: rgba(43,15,20,.65);
+  margin-bottom: 6px;
+}
+
+.filters-card select,
+.filters-card input{
+  width: 100%;
+  padding: 12px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(43,15,20,.14);
+  background: rgba(255,255,255,.92);
+  color: var(--text);
+}
+
+.filter-actions{
+  display:flex;
+  gap: 10px;
+  justify-content:flex-end;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.empty-state{
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px dashed rgba(43,15,20,.22);
+  background: rgba(255,255,255,.60);
+  color: rgba(43,15,20,.70);
+}
+
+.wine-grid{
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+@media (max-width: 980px){
+  .wine-grid{ grid-template-columns: 1fr; }
+}
+
+.wine-card{
+  display:grid;
+  grid-template-columns: 140px 1fr;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 24px;
+  border: 1px solid rgba(43,15,20,.12);
+  background: rgba(255,255,255,.78);
+  box-shadow: 0 18px 50px rgba(0,0,0,.08);
+  overflow:hidden;
+}
+
+@media (max-width: 560px){
+  .wine-card{ grid-template-columns: 1fr; }
+}
+
+.wine-media{
+  display:flex;
+  align-items:stretch;
+}
+
+.wine-img{
+  width: 140px;
+  height: 190px;
+  border-radius: 18px;
+  border: 1px solid rgba(43,15,20,.14);
+  background: radial-gradient(600px 220px at 30% 20%, rgba(211,160,74,.12), rgba(43,15,20,.08));
+  object-fit: cover;
+}
+
+.wine-img--placeholder{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight: 900;
+  letter-spacing: .08em;
+  color: rgba(43,15,20,.75);
+}
+
+.wine-content{ display:flex; flex-direction:column; gap: 10px; }
+
+.wine-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap: 12px;
+}
+
+.wine-name{
+  margin: 0;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+}
+
+.wine-badges{ display:flex; gap: 8px; flex-wrap: wrap; justify-content:flex-end; }
+
+.badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 12px;
+  border: 1px solid rgba(0,0,0,.06);
+  white-space: nowrap;
+}
+
+.badge-denom{ background: rgba(211,160,74,.16); color: rgba(43,15,20,.90); border-color: rgba(211,160,74,.22); }
+
+.badge-aging--good{ background:#e9fbf0; color:#1e8449; }
+.badge-aging--young{ background:#fff4df; color:#b9770e; }
+.badge-aging--old{ background:#fde7e5; color:#b03a2e; }
+.badge-aging--unknown{ background:#eef2f7; color:#3b4a5a; }
+
+.badge-stock--in{ background:#eaf4ff; color:#1f6fb2; }
+.badge-stock--out{ background:#f0f0f0; color:#666; }
+
+.wine-meta{
+  margin: 0;
+  display:flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  color: rgba(43,15,20,.78);
+  font-size: 14px;
+}
+
+.wine-meta b{ color: rgba(43,15,20,.90); }
+
+.wine-stats{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.wine-price{
+  font-size: 22px;
+  font-weight: 950;
+  letter-spacing: -0.02em;
+  color: rgba(43,15,20,.92);
+}
+
+.wine-window{
+  display:flex;
+  flex-direction:column;
+  gap: 2px;
+  color: rgba(43,15,20,.78);
+  font-size: 13px;
+}
+
+.wine-window span{ color: rgba(43,15,20,.60); font-weight: 800; text-transform: uppercase; letter-spacing: .08em; font-size: 11px; }
+
+.wine-actions{
+  display:flex;
+  gap: 10px;
+  align-items:center;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.add-to-cart-form{
+  display:flex;
+  align-items:flex-end;
+  gap: 10px;
+  margin: 0;
+}
+
+.qty{ display:flex; flex-direction:column; gap:6px; }
+.qty span{ font-size: 12px; font-weight: 900; letter-spacing:.08em; text-transform: uppercase; color: rgba(43,15,20,.65); }
+
+.qty-input{
+  width: 90px;
+  padding: 11px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(43,15,20,.14);
+  background: rgba(255,255,255,.92);
+}
+
+
+.mini-card h3{
+  margin: 0 0 6px;
+  letter-spacing: -0.01em;
+}
+
+.mini-card p{
+  margin: 0 0 12px;
+  color: rgba(43,15,20,.70);
+}
+
+
+/* =========================
+   TASTINGS (cards & grid)
+   ========================= */
+
+.tastings-grid{
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 18px 0 38px;
+}
+
+@media (max-width: 920px){
+  .tastings-grid{ grid-template-columns: 1fr; }
+}
+
+@media (min-width: 1240px){
+  .tastings-grid{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+.tasting-card{
+  border: 1px solid var(--border);
+  border-radius: 26px;
+  background: rgba(255,255,255,.72);
+  box-shadow: 0 16px 44px rgba(0,0,0,.08);
+  padding: 18px;
+  overflow: hidden;
+  position: relative;
+}
+
+.tasting-card::before{
+  content:"";
+  position:absolute;
+  inset:-1px;
+  border-radius: inherit;
+  pointer-events:none;
+  background: radial-gradient(520px 240px at 18% 10%, rgba(211,160,74,.16), transparent 62%),
+              radial-gradient(520px 240px at 100% 0%, rgba(138,47,62,.14), transparent 65%);
+  opacity: .7;
+}
+
+.tasting-card > *{ position: relative; }
+
+.tasting-card__top{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.tasting-card__title{
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.tasting-card__sub{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  margin-top: 8px;
+  color: rgba(43,15,20,.72);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.tasting-badges{ display:flex; gap: 8px; flex-wrap: wrap; justify-content:flex-end; }
+
+/* Status badges (uses existing .badge base) */
+.badge-status--open{ background:#e9fbf0; color:#1e8449; border-color:#bfe8c9; }
+.badge-status--needs{ background:#fff4df; color:#b9770e; border-color:#ffe3a3; }
+.badge-status--full{ background:#fde7e5; color:#b03a2e; border-color:#ffc5c5; }
+.badge-status--waitlist{ background:#e8f0ff; color:#2e5aac; border-color:#b6d0ff; }
+
+.tasting-meta{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+@media (max-width: 520px){
+  .tasting-meta{ grid-template-columns: 1fr; }
+}
+
+.tasting-meta__item{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(43,15,20,.10);
+  background: rgba(255,255,255,.55);
+  color: rgba(43,15,20,.86);
+  font-size: 13px;
+}
+
+.tasting-meta__icon{
+  width: 22px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  opacity: .9;
+}
+
+.tasting-kpis{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 10px;
+  margin: 8px 0 14px;
+}
+
+.tasting-kpi{
+  padding: 12px 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(43,15,20,.10);
+  background: rgba(255,255,255,.50);
+}
+
+.tasting-kpi__label{
+  color: rgba(43,15,20,.70);
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: .02em;
+}
+
+.tasting-kpi__value{
+  margin-top: 6px;
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.tasting-fee{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(211,160,74,.22);
+  background: rgba(211,160,74,.12);
+  margin: 8px 0 14px;
+}
+
+.tasting-fee__label{
+  font-weight: 900;
+  color: rgba(43,15,20,.85);
+  font-size: 13px;
+}
+
+.tasting-fee__value{
+  font-weight: 900;
+}
+
+.tasting-desc{
+  margin: 0 0 14px;
+  color: rgba(43,15,20,.78);
+  line-height: 1.55;
+}
+
+.tasting-card__actions{
+  display:flex;
+  justify-content:flex-end;
+  gap: 10px;
+}
+
+@media (max-width: 520px){
+  .tasting-card__actions .btn{ width: 100%; }
+}
+
+
+/* =========================
+   ADMIN DASHBOARD
+   ========================= */
+
+.admin-hero{
+  padding: 28px 16px 40px;
+  background-image:
+    radial-gradient(1000px 520px at 10% -20%, rgba(138,47,62,.20), transparent 60%),
+    radial-gradient(900px 520px at 95% -10%, rgba(211,160,74,.12), transparent 55%),
+    var(--bg);
+}
+
+.admin-shell{
+  width: min(var(--container), 100%);
+  margin: 0 auto;
+}
+
+.admin-head{
+  margin: 6px 0 18px;
+  padding: 20px 22px;
+  border-radius: 22px;
+  background: rgba(255,255,255,.72);
+  border: 1px solid rgba(43,15,20,.10);
+  box-shadow: var(--shadow);
+}
+
+.admin-kicker{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 900;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  font-size: 12px;
+  color: rgba(43,15,20,.72);
+  margin-bottom: 10px;
+}
+
+.admin-kicker::before{
+  content:"";
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, var(--gold), #fff0 62%);
+  box-shadow: 0 0 0 5px rgba(211,160,74,.16);
+}
+
+.admin-title{
+  margin: 0 0 6px;
+  font-size: clamp(28px, 3.2vw, 44px);
+  letter-spacing: -0.03em;
+  color: var(--wine-900);
+}
+
+.admin-subtitle{
+  margin: 0;
+  color: rgba(43,15,20,.70);
+}
+
+.admin-grid{
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 14px;
+}
+
+.admin-tile{
+  grid-column: span 4;
+  padding: 18px;
+  border-radius: 22px;
+  background: rgba(255,255,255,.78);
+  border: 1px solid rgba(43,15,20,.10);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 160px;
+}
+
+@media (max-width: 980px){
+  .admin-tile{ grid-column: span 6; }
+}
+@media (max-width: 620px){
+  .admin-tile{ grid-column: span 12; }
+}
+
+.admin-tile-top{
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.admin-icon{
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  background: rgba(43,15,20,.06);
+  border: 1px solid rgba(43,15,20,.10);
+  font-size: 20px;
+  flex: 0 0 auto;
+}
+
+.admin-tile-title{
+  font-weight: 900;
+  color: var(--wine-900);
+  margin: 2px 0 4px;
+}
+
+.admin-tile-desc{
+  color: rgba(43,15,20,.70);
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.admin-actions{
+  margin-top: auto;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Small buttons for tiles */
+.btn.btn-sm{
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.btn.btn-ghost{
+  background: rgba(43,15,20,.06);
+  border: 1px solid rgba(43,15,20,.14);
+  color: var(--wine-900);
+}
+
+.btn.btn-ghost:hover{
+  background: rgba(43,15,20,.10);
+}
+
+
+/* =========================
+   CREATE TASTING (FORM)
+   ========================= */
+
+.form-hero{
+  padding: 28px 16px 44px;
+  background-image:
+    radial-gradient(1000px 520px at 10% -20%, rgba(138,47,62,.20), transparent 60%),
+    radial-gradient(900px 520px at 95% -10%, rgba(211,160,74,.12), transparent 55%),
+    var(--bg);
+}
+
+.form-shell{
+  width: min(var(--container), 100%);
+  margin: 0 auto;
+}
+
+.form-head{
+  margin: 6px 0 16px;
+  padding: 20px 22px;
+  border-radius: 22px;
+  background: rgba(255,255,255,.76);
+  border: 1px solid rgba(43,15,20,.10);
+  box-shadow: var(--shadow);
+}
+
+.form-kicker{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 900;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  font-size: 12px;
+  color: rgba(43,15,20,.72);
+  margin-bottom: 10px;
+}
+
+.form-kicker::before{
+  content:"";
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, var(--gold), #fff0 62%);
+  box-shadow: 0 0 0 5px rgba(211,160,74,.16);
+}
+
+.form-title{
+  margin: 0 0 6px;
+  font-size: clamp(28px, 3.2vw, 44px);
+  letter-spacing: -0.03em;
+  color: var(--wine-900);
+}
+
+.form-subtitle{
+  margin: 0;
+  color: rgba(43,15,20,.70);
+}
+
+.form-card{
+  padding: 20px;
+  border-radius: 22px;
+  background: rgba(255,255,255,.82);
+  border: 1px solid rgba(43,15,20,.10);
+  box-shadow: var(--shadow);
+}
+
+.alert{
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(43,15,20,.12);
+  margin: 10px 0;
+  background: rgba(255,255,255,.70);
+  color: rgba(43,15,20,.85);
+}
+.alert-error{
+  border-color: rgba(185, 48, 64, .28);
+  background: rgba(185, 48, 64, .08);
+}
+.alert-warn{
+  border-color: rgba(211, 160, 74, .35);
+  background: rgba(211, 160, 74, .10);
+}
+
+.tasting-form .field{
+  display:flex;
+  flex-direction:column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.tasting-form label{
+  font-size: 13px;
+  font-weight: 900;
+  color: rgba(43,15,20,.84);
+}
+
+.req{ color: rgba(185,48,64,.95); }
+
+.tasting-form input[type="text"],
+.tasting-form input[type="datetime-local"],
+.tasting-form input[type="number"],
+.tasting-form select,
+.tasting-form textarea{
+  width: 100%;
+  max-width: 100%;
+  display: block;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(43,15,20,.14);
+  background: rgba(255,255,255,.86);
+  color: var(--text);
+  box-sizing: border-box;
+}
+
+.tasting-form textarea{ resize: vertical; min-height: 120px; }
+
+.tasting-form input:focus,
+.tasting-form select:focus,
+.tasting-form textarea:focus{
+  outline: none;
+  border-color: rgba(211,160,74,.60);
+  box-shadow: 0 0 0 4px rgba(211,160,74,.16);
+}
+
+.hint{
+  margin-top: 6px;
+  font-size: 12px;
+  color: rgba(43,15,20,.62);
+}
+
+.pill{
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(43,15,20,.14);
+  background: rgba(43,15,20,.06);
+  color: rgba(43,15,20,.86);
+  font-weight: 800;
+}
+
+.tasting-grid{
+  display: grid;
+  grid-template-columns: 1.1fr .9fr;
+  gap: 16px;
+}
+@media (max-width: 860px){
+  .tasting-grid{ grid-template-columns: 1fr; }
+}
+
+.divider{
+  height: 1px;
+  background: rgba(43,15,20,.10);
+  margin: 6px 0 16px;
+}
+
+.tasting-section{ margin-top: 4px; }
+
+.section-head{
+  display:flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.section-title{
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+  color: var(--wine-900);
+}
+
+.section-subtitle{
+  margin: 0;
+  color: rgba(43,15,20,.70);
+  font-size: 13px;
+}
+
+.wine-list{
+  display: grid;
+  gap: 12px;
+}
+
+.wine-item{
+  display: grid;
+  grid-template-columns: 34px 54px 1fr;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(43,15,20,.10);
+  background: rgba(255,255,255,.70);
+}
+
+.wine-item.is-checked{
+  border-color: rgba(211,160,74,.35);
+  box-shadow: 0 10px 34px rgba(27,8,12,.08);
+}
+
+.wine-check{
+  display:flex;
+  align-items: flex-start;
+  padding-top: 6px;
+  cursor: pointer;
+}
+
+.wine-check input{
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.check-ui{
+  width: 18px; height: 18px;
+  border-radius: 6px;
+  border: 1px solid rgba(43,15,20,.22);
+  background: rgba(255,255,255,.86);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.35);
+}
+
+.wine-check input:checked + .check-ui{
+  background: rgba(211,160,74,.22);
+  border-color: rgba(211,160,74,.60);
+  box-shadow: inset 0 0 0 4px rgba(211,160,74,.20);
+}
+
+.wine-thumb{
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+  object-fit: cover;
+  border: 1px solid rgba(43,15,20,.10);
+  background: rgba(43,15,20,.05);
+}
+.wine-thumb--ph{
+  display:grid;
+  place-items:center;
+  font-weight: 900;
+  color: rgba(43,15,20,.72);
+}
+
+.wine-top{
+  display:flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.wine-name{
+  font-weight: 950;
+  color: var(--wine-900);
+}
+
+.wine-badges{
+  display:flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.badge{
+  display:inline-flex;
+  align-items:center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(43,15,20,.14);
+  background: rgba(43,15,20,.05);
+  font-weight: 800;
+  font-size: 12px;
+  color: rgba(43,15,20,.82);
+}
+.badge-ghost{
+  background: rgba(255,255,255,.75);
+}
+.badge-ok{
+  background: rgba(211,160,74,.14);
+  border-color: rgba(211,160,74,.35);
+}
+
+.wine-note{
+  margin-top: 10px;
+  display:flex;
+  flex-direction:column;
+  gap: 8px;
+}
+
+.form-actions{
+  margin-top: 18px;
+  display:flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* FIX: labels visibles en Create Tasting (y cualquier form con fondo claro) */
+.tasting-form .field label{
+  color: rgba(43,15,20,.84) !important;
+}
+
+
+/* =========================
+   PROFILE
+   ========================= */
+
+.profile-hero{
+  padding: 26px 16px 44px;
+  background-image:
+    radial-gradient(1000px 520px at 10% -20%, rgba(138,47,62,.20), transparent 60%),
+    radial-gradient(900px 520px at 95% -10%, rgba(211,160,74,.12), transparent 55%),
+    var(--bg);
+}
+
+.profile-shell{
+  width: min(var(--container), 100%);
+  margin: 0 auto;
+}
+
+.profile-head{
+  padding: 20px 22px;
+  border-radius: 22px;
+  background: rgba(255,255,255,.72);
+  border: 1px solid rgba(43,15,20,.10);
+  box-shadow: var(--shadow);
+  margin-bottom: 14px;
+}
+
+.profile-kicker{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 900;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  font-size: 12px;
+  color: rgba(43,15,20,.72);
+  margin-bottom: 10px;
+}
+
+.profile-kicker::before{
+  content:"";
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, var(--gold), #fff0 62%);
+  box-shadow: 0 0 0 5px rgba(211,160,74,.16);
+}
+
+.profile-title{
+  margin: 0 0 6px;
+  font-size: clamp(28px, 3.2vw, 44px);
+  letter-spacing: -0.03em;
+  color: var(--wine-900);
+}
+
+.profile-subtitle{
+  margin: 0;
+  color: rgba(43,15,20,.70);
+}
+
+.profile-card{
+  padding: 18px;
+  border-radius: 22px;
+  background: rgba(255,255,255,.78);
+  border: 1px solid rgba(43,15,20,.10);
+  box-shadow: var(--shadow);
+}
+
+.profile-top{
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 14px;
+  align-items: center;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(43,15,20,.10);
+  margin-bottom: 16px;
+}
+
+@media (max-width: 720px){
+  .profile-top{
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+  }
+  .profile-badges{ grid-column: 1 / -1; }
+}
+
+.profile-avatar{
+  width: 54px; height: 54px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  letter-spacing: .06em;
+  color: rgba(43,15,20,.86);
+  background: rgba(43,15,20,.06);
+  border: 1px solid rgba(43,15,20,.10);
+}
+
+.profile-name{
+  font-weight: 900;
+  color: var(--wine-900);
+  font-size: 18px;
+}
+
+.profile-email{
+  color: rgba(43,15,20,.68);
+  font-size: 14px;
+  margin-top: 2px;
+}
+
+.profile-badges{
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.badge{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 12px;
+  border: 1px solid rgba(43,15,20,.12);
+  background: rgba(43,15,20,.06);
+  color: rgba(43,15,20,.78);
+}
+.badge-role{
+  background: rgba(211,160,74,.12);
+  border-color: rgba(211,160,74,.28);
+  color: rgba(43,15,20,.84);
+}
+.badge-ok{
+  background: rgba(26,127,55,.12);
+  border-color: rgba(26,127,55,.25);
+  color: rgba(26,127,55,.95);
+}
+.badge-muted{
+  background: rgba(43,15,20,.06);
+  border-color: rgba(43,15,20,.12);
+  color: rgba(43,15,20,.68);
+}
+
+.profile-grid{
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 12px;
+}
+
+.profile-kv{
+  grid-column: span 6;
+  padding: 14px 14px;
+  border-radius: 18px;
+  background: rgba(255,255,255,.68);
+  border: 1px solid rgba(43,15,20,.10);
+}
+
+.profile-kv-wide{
+  grid-column: span 12;
+}
+
+@media (max-width: 760px){
+  .profile-kv{ grid-column: span 12; }
+}
+
+.profile-k{
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: rgba(43,15,20,.62);
+  margin-bottom: 8px;
+}
+
+.profile-v{
+  color: rgba(43,15,20,.86);
+  line-height: 1.45;
+}
+
+.profile-actions{
+  margin-top: 16px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.btn.btn-ghost{
+  background: rgba(43,15,20,.06);
+  border: 1px solid rgba(43,15,20,.14);
+  color: var(--wine-900);
+}
+.btn.btn-ghost:hover{
+  background: rgba(43,15,20,.10);
+}
+
+/* =========================
+   NAVBAR: greeting after logout (not a button)
+   ========================= */
+.navbar{
+  gap: 10px;
+}
+
+.navbar .nav-right{
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+}
+
+/* Make greeting look like plain text (not a pill/button) */
+.navbar .nav-user{
+  padding: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  border: none !important;
+
+  color: rgba(255,255,255,.80) !important;
+  font-weight: 700;
+  letter-spacing: .01em;
+  margin-left: 18px; /* pushes it further right than Logout */
+}
+
+/* Small screens: keep it neat */
+@media (max-width: 560px){
+  .navbar .nav-right{
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .navbar .nav-user{
+    margin-left: 0;
+    width: 100%;
+    text-align: right;
+  }
+}
+
+/* =========================
+   NAVBAR FIX: keep buttons aligned left; greeting separated but not flush right
+   ========================= */
+
+/* If you previously added .nav-right, neutralize it (in case any remains) */
+.navbar .nav-right{
+  margin-left: 0 !important;
+  display: contents !important; /* makes children behave like they are direct flex items */
+}
+
+/* Make greeting look like plain text, not a button/pill */
+.navbar .nav-user.nav-greeting{
+  padding: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  border: none !important;
+
+  color: rgba(255,255,255,.82) !important;
+  font-weight: 700;
+  letter-spacing: .01em;
+
+  /* pushes ONLY the greeting towards the right */
+  margin-left: auto !important;
+
+  /* but keep some space to the right edge (so it's not stuck to the corner) */
+  margin-right: 48px !important;
+}
+
+/* On small screens, keep it tidy */
+@media (max-width: 560px){
+  .navbar .nav-user.nav-greeting{
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    width: 100%;
+    text-align: right;
+    opacity: .9;
+  }
+}
+
+/* --- Navbar: Logout junto a los links + Hello separado (no al borde) --- */
+.navbar .nav-logout{
+  margin-left: 0 !important; /* por si algo lo estaba empujando */
+}
+
+/* Hello: que sea texto (no botón) y que se vaya hacia la derecha pero con margen */
+.navbar .nav-greeting{
+  margin-left: auto !important;                 /* empuja SOLO el hello */
+  margin-right: clamp(90px, 14vw, 350px) !important;  /* NO pegado al borde */
+
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+
+  color: rgba(255,255,255,.82) !important;
+  font-weight: 700;
+  letter-spacing: .01em;
+}
+
+/* =========================
+   ADMIN – USERS
+   (admin_usuarios.php)
+   ========================= */
+
+/* Subtle pills for roles (uses existing .badge base) */
+.badge-soft{
+  background: rgba(43,15,20,.06);
+  color: rgba(43,15,20,.84);
+  border-color: rgba(43,15,20,.12);
+  font-weight: 800;
+}
+
+/* User status badges */
+.badge-status--active{ background:#e9fbf0; color:#1e8449; border-color:#bfe8c9; }
+.badge-status--inactive{ background:#fde7e5; color:#b03a2e; border-color:#ffc5c5; }
+.badge-status--self{ background:#eaf4ff; color:#1f6fb2; border-color:#b6d0ff; }
+
+/* Monospace cells for emails/dates */
+.cell-mono{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 13px;
+  color: rgba(43,15,20,.80);
+}
+
+/* Actions inside tables */
+.table-actions{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.inline-form{ display: inline; margin: 0; }
+
+/* Semantic action buttons */
+.btn-danger{
+  background: linear-gradient(180deg, rgba(176,58,46,.92), rgba(146,43,33,.98));
+  border: 1px solid rgba(255,255,255,.14);
+}
+.btn-success{
+  background: linear-gradient(180deg, rgba(30,132,73,.92), rgba(25,111,61,.98));
+  border: 1px solid rgba(255,255,255,.14);
+}
+
+/* Keep the last column usable */
+.users-table th:last-child,
+.users-table td:last-child{
+  width: 260px;
+}
+
+@media (max-width: 520px){
+  .users-table th:last-child,
+  .users-table td:last-child{ width: auto; }
+}
+
+/* =========================
+   ADMIN – WINE FORM
+   ========================= */
+
+.wine-form-grid{
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+@media (max-width: 860px){
+  .wine-form-grid{ grid-template-columns: 1fr; }
+}
+
+.wine-form input[type="file"]{
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px dashed rgba(43,15,20,.22);
+  background: rgba(255,255,255,.75);
+}
+
+.wine-image-box{
+  margin-top: 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(43,15,20,.10);
+  background: rgba(43,15,20,.05);
+  padding: 12px;
+}
+
+.wine-image-preview{
+  width: 100%;
+  max-height: 240px;
+  object-fit: cover;
+  border-radius: 16px;
+  border: 1px solid rgba(43,15,20,.10);
+  background: rgba(255,255,255,.6);
+}
+
+.wine-image-placeholder{
+  height: 160px;
+  border-radius: 16px;
+  display:grid;
+  place-items:center;
+  color: rgba(43,15,20,.65);
+  font-weight: 900;
+}
+
+/* Hide horizontal scrollbar (table-wrap) */
+.table-wrap{
+  overflow-x: auto;          /* mantiene el scroll si hace falta */
+  scrollbar-width: none;     /* Firefox */
+  -ms-overflow-style: none;  /* IE/Edge antiguos */
+}
+.table-wrap::-webkit-scrollbar{
+  display: none;             /* Chrome/Safari */
+}
+
+/* =========================
+   ADMIN – SALES (admin_compras.php)
+   ========================= */
+
+.sales-search{
+  display:flex;
+  gap: 10px;
+  align-items:center;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.sales-search__input{
+  flex: 1;
+  min-width: 260px;
+  padding: 11px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(43,15,20,.12);
+  background: rgba(255,255,255,.80);
+  box-shadow: 0 10px 24px rgba(27,8,12,.06);
+  outline: none;
+}
+
+.sales-search__input:focus{
+  border-color: rgba(43,15,20,.20);
+  box-shadow: 0 14px 36px rgba(27,8,12,.10);
+}
+
+.sales-stats{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+@media (max-width: 720px){
+  .sales-stats{ grid-template-columns: 1fr; }
+}
+
+.sales-stat{
+  padding: 12px 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(43,15,20,.10);
+  background: rgba(255,255,255,.70);
+}
+
+.sales-stat__label{
+  font-size: 12px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: rgba(43,15,20,.62);
+  font-weight: 900;
+}
+
+.sales-stat__value{
+  margin-top: 4px;
+  font-size: 18px;
+  font-weight: 900;
+  color: rgba(43,15,20,.92);
+}
+
+.sales-table{ min-width: 980px; }
+
+.cell-right{ text-align: right; }
+
+.buyer__name{
+  font-weight: 900;
+}
+
+.buyer__meta{
+  font-size: 12px;
+  color: rgba(43,15,20,.62);
+  margin-top: 2px;
+}
+
+.sale-wine{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+}
+
+.sale-wine__img{
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 14px;
+  border: 1px solid rgba(43,15,20,.10);
+  background: rgba(255,255,255,.70);
+}
+
+.sale-wine__img--empty{
+  display:grid;
+  place-items:center;
+  font-size: 18px;
+}
+
+.sale-wine__name{
+  font-weight: 900;
+}
+
+.sale-wine__meta{
+  font-size: 12px;
+  color: rgba(43,15,20,.62);
+  margin-top: 2px;
+}
+
+/* =========================
+   ADMIN – TASTINGS
+   ========================= */
+
+.tastings-table th:last-child,
+.tastings-table td:last-child{
+  width: 220px;
+}
+
+.tastings-table{
+  min-width: 720px;
+}
+
+/* =========================
+   ADMIN – SOMMELIER CERTIFICATIONS
+   ========================= */
+
+.somm-cert-table{
+  min-width: 980px;
+}
+
+.somm-cert-table th:last-child,
+.somm-cert-table td:last-child{
+  width: 260px;
+}
+
+.doc-list{
+  margin: 0;
+  padding-left: 18px;
+}
+
+.doc-item{
+  margin: 4px 0;
+}
+
+.doc-link{
+  font-weight: 900;
+}
+
+.doc-status{
+  margin-left: 8px;
+}
+
+.doc-empty{
+  color: rgba(43,15,20,.65);
+}
+
+/* =========================
+   ADMIN – REPORTS
+   ========================= */
+
+.reports-grid{
+  display: grid;
+  gap: 14px;
+}
+
+.report-card .table-wrap{
+  margin-top: 10px;
+}
+
+.report-head{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.report-title{
+  margin: 0;
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--wine-900);
+  letter-spacing: -0.02em;
+}
+
+.report-subtitle{
+  margin: 6px 0 0;
+  color: rgba(43,15,20,.70);
+  font-size: 14px;
+}
+
+.reports-filter{
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.rf-field{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 220px;
+}
+
+.reports-filter label{
+  font-size: 13px;
+  font-weight: 900;
+  color: rgba(43,15,20,.84);
+}
+
+.reports-filter input[type="date"]{
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(43,15,20,.14);
+  background: rgba(255,255,255,.86);
+  color: var(--text);
+  box-sizing: border-box;
+}
+
+.rf-actions{
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* =========================
+   SOMMELIER – DOCS
+   ========================= */
+
+.doc-upload input[type="file"]{
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px dashed rgba(43,15,20,.22);
+  background: rgba(255,255,255,.75);
+}
+
+.doc-cards{
+  display: grid;
+  gap: 10px;
+}
+
+.doc-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(43,15,20,.10);
+  background: rgba(255,255,255,.70);
+}
+
+@media (max-width: 720px){
+  .doc-row{ flex-direction: column; align-items: flex-start; }
+  .doc-row__right{ width: 100%; justify-content: flex-start; }
+}
+
+.doc-row__name{
+  font-weight: 900;
+}
+
+.doc-row__meta{
+  margin-top: 4px;
+  font-size: 12px;
+  color: rgba(43,15,20,.62);
+}
+
+.doc-row__right{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Custom file picker (English + styled) */
+.file-picker{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  flex-wrap: wrap;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px dashed rgba(43,15,20,.22);
+  background: rgba(255,255,255,.75);
+}
+
+.file-input-hidden{
+  position:absolute;
+  left:-9999px;
+  width:1px;
+  height:1px;
+  overflow:hidden;
+}
+
+.file-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(43,15,20,.12);
+  background: rgba(255,255,255,.90);
+  color: rgba(43,15,20,.92);
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(27,8,12,.06);
+  transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+}
+
+.file-btn:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 14px 34px rgba(27,8,12,.10);
+}
+
+.file-text{
+  color: rgba(43,15,20,.72);
+  font-weight: 800;
+  font-size: 13px;
+}

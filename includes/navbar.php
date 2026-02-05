@@ -45,11 +45,13 @@ require_once __DIR__ . '/db.php';
         <?php if ($rol === 'coleccionista'): ?>
             <a href="<?= BASE_URL ?>/pages/my_purchases.php">My purchases</a>
         <?php endif; ?>
+<a href="<?= BASE_URL ?>/pages/profile.php">My profile</a>
+<a class="nav-logout" href="<?= BASE_URL ?>/pages/logout.php">Logout</a>
 
-        <a href="<?= BASE_URL ?>/pages/profile.php">My profile</a>
+<span class="nav-greeting">
+  Hello, <?= htmlspecialchars(explode(' ', (string)($u['nombre'] ?? 'User'))[0]) ?>
+</span>
 
-        <span class="nav-user">Hello, <?= htmlspecialchars(explode(' ', (string)($u['nombre'] ?? 'User'))[0]) ?></span>
-        <a href="<?= BASE_URL ?>/pages/logout.php">Logout</a>
 
     <?php else: ?>
         <a href="<?= BASE_URL ?>/pages/login.php">Login</a>

@@ -1,200 +1,159 @@
 <?php
-require_once __DIR__ . '/../includes/auth.php';
+session_start();
 require_once __DIR__ . '/../includes/db.php';
 include __DIR__ . '/../includes/header.php';
 
-requireLogin();
-$u  = currentUser();
+if (!isset($_SESSION['usuario'])) {
+    header('Location: login.php');
+    exit;
+}
+
 $db = getDB();
+$uid = (int)($_SESSION['usuario']['id_usuario'] ?? 0);
 
-if (($u['rol'] ?? '') !== 'sommelier') {
-    http_response_code(403);
-    echo "<p class='error'>Only sommeliers can access this page.</p>";
-    include __DIR__ . '/../includes/footer.php';
-    exit;
+// Flash
+$flashSuccess = $_SESSION['flash_success'] ?? null;
+$flashError   = $_SESSION['flash_error'] ?? null;
+unset($_SESSION['flash_success'], $_SESSION['flash_error']);
+
+// Estado certificado
+$stmt = $db->prepare("SELECT certificado, nombre, email FROM usuarios WHERE id_usuario=? LIMIT 1");
+$stmt->execute([$uid]);
+$me = $stmt->fetch(PDO::FETCH_ASSOC);
+
+$isCertified = !empty($me['certificado']);
+
+// Docs
+$docs = [];
+if ($db->query("SHOW TABLES LIKE 'sommelier_cert_docs'")->fetchColumn()) {
+    $stmt = $db->prepare("
+      SELECT id, original_name, status, uploaded_at
+      FROM sommelier_cert_docs
+      WHERE user_id = ?
+      ORDER BY uploaded_at DESC, id DESC
+      LIMIT 50
+    ");
+    $stmt->execute([$uid]);
+    $docs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-// Refresh certificado from DB to avoid stale session
-$userId = (int)($u['id_usuario'] ?? $u['id'] ?? ($_SESSION['usuario']['id_usuario'] ?? $_SESSION['usuario']['id'] ?? 0));
-if ($userId > 0) {
-    $stmt = $db->prepare("SELECT certificado FROM usuarios WHERE id_usuario = ?");
-    $stmt->execute([$userId]);
-    $cert = (int)$stmt->fetchColumn();
-    $u['certificado'] = $cert;
-    $_SESSION['usuario']['certificado'] = $cert;
-}
-
-$errores = [];
-$success = null;
-
-// Detect columns
-$docCols = [];
-foreach ($db->query("DESCRIBE sommelier_cert_docs")->fetchAll(PDO::FETCH_ASSOC) as $row) {
-    $docCols[] = $row['Field'];
-}
-$docIdCol     = in_array('id', $docCols, true) ? 'id' : (in_array('doc_id', $docCols, true) ? 'doc_id' : null);
-$docUserCol   = in_array('user_id', $docCols, true) ? 'user_id' : (in_array('id_usuario', $docCols, true) ? 'id_usuario' : null);
-$docOrigCol   = in_array('original_name', $docCols, true) ? 'original_name' : (in_array('nombre_original', $docCols, true) ? 'nombre_original' : null);
-$docStoreCol  = in_array('stored_name', $docCols, true) ? 'stored_name' : (in_array('nombre_guardado', $docCols, true) ? 'nombre_guardado' : null);
-$docMimeCol   = in_array('mime_type', $docCols, true) ? 'mime_type' : (in_array('mime', $docCols, true) ? 'mime' : null);
-$docSizeCol   = in_array('file_size', $docCols, true) ? 'file_size' : (in_array('tamano', $docCols, true) ? 'tamano' : null);
-$docStatusCol = in_array('status', $docCols, true) ? 'status' : (in_array('estado', $docCols, true) ? 'estado' : null);
-
-if (!$docUserCol || !$docOrigCol || !$docStoreCol) {
-    echo "<p class='error'>sommelier_cert_docs table schema is not compatible.</p>";
-    include __DIR__ . '/../includes/footer.php';
-    exit;
-}
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $files = $_FILES['cert_docs'] ?? null;
-
-    $hasAnyFile = $files && isset($files['name']) && is_array($files['name'])
-        && count(array_filter(array_map('trim', $files['name']))) > 0;
-
-    if (!$hasAnyFile) {
-        $errores[] = "Please select at least one file.";
-    }
-
-    if (empty($errores)) {
-        $allowedMime = [
-            'application/pdf' => 'pdf',
-            'image/jpeg'      => 'jpg',
-            'image/png'       => 'png',
-        ];
-        $maxFileSize = 10 * 1024 * 1024; // 10MB
-        $maxFiles = 5;
-
-        $names    = $files['name'] ?? [];
-        $tmpNames = $files['tmp_name'] ?? [];
-        $sizes    = $files['size'] ?? [];
-        $errorsUp = $files['error'] ?? [];
-
-        $indices = [];
-        for ($i = 0; $i < count($names); $i++) {
-            $origName = trim((string)($names[$i] ?? ''));
-            if ($origName !== '') $indices[] = $i;
-        }
-
-        if (count($indices) > $maxFiles) {
-            $errores[] = "Too many files. Maximum: $maxFiles";
-        }
-
-        if (empty($errores)) {
-            $baseUploadDir = __DIR__ . '/../uploads/sommelier_docs';
-            if (!is_dir($baseUploadDir) && !mkdir($baseUploadDir, 0775, true)) {
-                $errores[] = "Could not create upload directory.";
-            }
-            $userUploadDir = $baseUploadDir . '/' . $userId;
-            if (!is_dir($userUploadDir) && !mkdir($userUploadDir, 0775, true)) {
-                $errores[] = "Could not create user upload directory.";
-            }
-        }
-
-        if (empty($errores)) {
-            $finfo = class_exists('finfo') ? new finfo(FILEINFO_MIME_TYPE) : null;
-
-            try {
-                $db->beginTransaction();
-
-                foreach ($indices as $i) {
-                    $origName = (string)($names[$i] ?? '');
-                    $err = (int)($errorsUp[$i] ?? UPLOAD_ERR_NO_FILE);
-                    if ($err !== UPLOAD_ERR_OK) {
-                        throw new Exception("Upload error for file: $origName");
-                    }
-
-                    $tmp  = (string)($tmpNames[$i] ?? '');
-                    $size = (int)($sizes[$i] ?? 0);
-
-                    if ($size <= 0 || $size > $maxFileSize) {
-                        throw new Exception("Invalid file size for: $origName");
-                    }
-
-                    $mime = $finfo ? $finfo->file($tmp) : (function_exists('mime_content_type') ? mime_content_type($tmp) : '');
-                    if (!isset($allowedMime[$mime])) {
-                        throw new Exception("File type not allowed: $origName");
-                    }
-
-                    $ext = $allowedMime[$mime];
-                    $storedName = bin2hex(random_bytes(16)) . '.' . $ext;
-                    $dest = $userUploadDir . '/' . $storedName;
-
-                    if (!move_uploaded_file($tmp, $dest)) {
-                        throw new Exception("Could not save file: $origName");
-                    }
-
-                    $cols = [$docUserCol, $docOrigCol, $docStoreCol];
-                    $vals = [$userId, $origName, $storedName];
-
-                    if ($docMimeCol)  { $cols[] = $docMimeCol;  $vals[] = $mime; }
-                    if ($docSizeCol)  { $cols[] = $docSizeCol;  $vals[] = $size; }
-                    if ($docStatusCol){ $cols[] = $docStatusCol; $vals[] = 'pending'; }
-
-                    $placeholders = implode(', ', array_fill(0, count($cols), '?'));
-                    $colList = implode(', ', array_map(fn($c) => "`$c`", $cols));
-
-                    $stmt = $db->prepare("INSERT INTO sommelier_cert_docs ($colList) VALUES ($placeholders)");
-                    $stmt->execute($vals);
-                }
-
-                $db->commit();
-                $success = 'Documents uploaded. An admin will review them.';
-
-            } catch (Throwable $e) {
-                if ($db->inTransaction()) $db->rollBack();
-                $errores[] = 'Upload failed: ' . $e->getMessage();
-            }
-        }
-    }
-}
-
-// Fetch docs to show
-$docsStmt = $db->prepare(
-    "SELECT `$docIdCol` AS doc_id, `$docOrigCol` AS original_name, `$docStoreCol` AS stored_name" .
-    ($docStatusCol ? ", `$docStatusCol` AS status" : "") .
-    " FROM sommelier_cert_docs WHERE `$docUserCol`=? ORDER BY `$docIdCol` DESC"
-);
-$docsStmt->execute([$userId]);
-$docs = $docsStmt->fetchAll(PDO::FETCH_ASSOC);
+// Badge class
+$certBadge = $isCertified ? 'badge badge-status--active' : 'badge badge-status--inactive';
+$certText  = $isCertified ? 'Certified' : 'Not certified';
 ?>
 
-<h1>My certification documents</h1>
+<section class="admin-hero">
+  <div class="admin-shell">
+    <div class="admin-head">
+      <div class="admin-kicker">Sommelier</div>
+      <h1 class="admin-title">My certification documents</h1>
+      <p class="admin-subtitle">Upload your certificates and track the review status.</p>
 
-<p>
-    Status: <strong><?= !empty($u['certificado']) ? 'Certified' : 'Not certified yet' ?></strong>
-</p>
+      <div class="tasting-badges" style="margin-top: 10px;">
+        <span class="<?= $certBadge ?>"><?= $certText ?></span>
+        <span class="badge badge-ghost"><?= htmlspecialchars($me['email'] ?? '') ?></span>
+      </div>
 
-<?php if ($success): ?>
-    <p class="success"><?= htmlspecialchars($success) ?></p>
-<?php endif; ?>
+      <div class="admin-actions" style="margin-top: 14px;">
+      
+      </div>
+    </div>
 
-<?php foreach ($errores as $e): ?>
-    <p class="error"><?= htmlspecialchars($e) ?></p>
-<?php endforeach; ?>
+    <?php if ($flashSuccess): ?>
+      <div class="notice notice-success"><?= htmlspecialchars($flashSuccess) ?></div>
+    <?php endif; ?>
+    <?php if ($flashError): ?>
+      <div class="notice notice-error"><?= htmlspecialchars($flashError) ?></div>
+    <?php endif; ?>
 
-<form method="post" enctype="multipart/form-data">
-    <label>Upload new documents (PDF/JPG/PNG):</label><br>
-    <input type="file" name="cert_docs[]" accept="application/pdf,image/jpeg,image/png" multiple required>
-    <p style="margin-top:6px; font-size:0.9em;">Max 5 files, 10MB each.</p>
-    <button type="submit">Upload</button>
-</form>
+    <div class="tasting-grid">
+      <!-- Upload card -->
+      <div class="form-card">
+        <div class="section-head">
+          <h2 class="section-title">Upload new documents</h2>
+          <p class="section-subtitle">Accepted formats: PDF/JPG/PNG. Max 5 files, 10MB each.</p>
+        </div>
 
-<h2>Your uploaded documents</h2>
-<?php if (empty($docs)): ?>
-    <p>No documents uploaded yet.</p>
-<?php else: ?>
-    <ul>
-        <?php foreach ($docs as $d): ?>
-            <li>
-                <?= htmlspecialchars($d['original_name']) ?>
-                <?php if (isset($d['status'])): ?>
-                    (<?= htmlspecialchars($d['status']) ?>)
-                <?php endif; ?>
-                — <a href="download_sommelier_doc.php?doc_id=<?= (int)$d['doc_id'] ?>">Download</a>
-            </li>
-        <?php endforeach; ?>
-    </ul>
-<?php endif; ?>
+        <form method="post" action="upload_sommelier_docs.php" enctype="multipart/form-data" class="doc-upload">
+          <div class="field">
+  <label for="docs">Select files</label>
+
+  <div class="file-picker">
+    <input id="docs" class="file-input-hidden" type="file" name="docs[]" multiple accept=".pdf,image/*">
+    <label for="docs" class="file-btn">Choose files</label>
+    <span id="fileText" class="file-text">No files selected</span>
+  </div>
+
+  <div class="hint">Tip: keep filenames short and clear (e.g., WSET2.pdf).</div>
+</div>
+
+
+          <div class="form-actions">
+            <button type="submit" class="btn">Upload</button>
+            <a class="btn btn-ghost" href="sommelier_docs.php">Refresh</a>
+          </div>
+        </form>
+      </div>
+
+      <!-- List card -->
+      <div class="form-card">
+        <div class="section-head">
+          <h2 class="section-title">Your uploaded documents</h2>
+          <p class="section-subtitle">Review status is updated by the admin.</p>
+        </div>
+
+        <?php if (empty($docs)): ?>
+          <div class="notice">No documents uploaded yet.</div>
+        <?php else: ?>
+          <div class="doc-cards">
+            <?php foreach ($docs as $d): ?>
+              <?php
+                $st = strtolower(trim((string)($d['status'] ?? 'pending')));
+                $badge = 'badge badge-ghost';
+                if (in_array($st, ['approved','accepted'], true)) $badge = 'badge badge-status--active';
+                if (in_array($st, ['rejected','denied'], true))  $badge = 'badge badge-status--inactive';
+
+                $when = !empty($d['uploaded_at']) ? date('d/m/Y H:i', strtotime($d['uploaded_at'])) : '';
+              ?>
+              <div class="doc-row">
+                <div class="doc-row__left">
+                  <div class="doc-row__name"><?= htmlspecialchars($d['original_name'] ?? 'Document') ?></div>
+                  <?php if ($when): ?>
+                    <div class="doc-row__meta">Uploaded: <span class="cell-mono"><?= htmlspecialchars($when) ?></span></div>
+                  <?php endif; ?>
+                </div>
+
+                <div class="doc-row__right">
+                  <span class="<?= $badge ?>"><?= htmlspecialchars($d['status'] ?? 'pending') ?></span>
+                  <a class="btn btn-secondary btn-sm"
+                     href="download_sommelier_doc.php?doc_id=<?= (int)$d['id'] ?>">
+                    Download
+                  </a>
+                </div>
+              </div>
+            <?php endforeach; ?>
+          </div>
+        <?php endif; ?>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<script>
+  (function () {
+    const input = document.getElementById('docs');
+    const text  = document.getElementById('fileText');
+    if (!input || !text) return;
+
+    input.addEventListener('change', () => {
+      const n = input.files ? input.files.length : 0;
+      if (n === 0) text.textContent = 'No files selected';
+      else if (n === 1) text.textContent = input.files[0].name;
+      else text.textContent = `${n} files selected`;
+    });
+  })();
+</script>
+
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>

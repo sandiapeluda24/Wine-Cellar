@@ -142,110 +142,159 @@ foreach ($purchases as $p) {
     $totalSpent += ((float)$p['unit_price']) * ((int)$p['quantity']);
 }
 
+$totalOrders = count($purchases);
+$totalBottles = 0;
+foreach ($purchases as $p) {
+    $totalBottles += (int)$p['quantity'];
+}
+
+
 include __DIR__ . '/../includes/header.php';
 ?>
 
-<h1>My Purchases</h1>
 
-<?php if (empty($purchases)): ?>
-    <p>You haven't made any purchases yet.</p>
-    <p><a href="<?= BASE_URL ?>/pages/wines.php">Browse wines</a></p>
-<?php else: ?>
 
-    <p><strong>Total spent:</strong> <?= number_format($totalSpent, 2) ?> €</p>
-    <div class="table-wrap">
-        <table>
-            <thead>
-            <tr>
-                <th>Date/Time</th>
-                <th>Wine</th>
-                <th>Qty</th>
-                <th>Type</th>
-                <th>Denomination</th>
-                <th>Vintage</th>
-                <th>Aging status</th>
-                <th>Cellared</th>
-                <th>Unit price</th>
-                <th>Subtotal</th>
-                <?php if ($statusCol): ?>
-                    <th>Status</th>
-                <?php endif; ?>
-            </tr>
-            </thead>
-            <tbody>
-            <?php foreach ($purchases as $p):
-                $unit = (float)$p['unit_price'];
-                $qty  = (int)$p['quantity'];
-                $sub  = $unit * $qty;
+<section class="admin-hero">
+  <div class="admin-shell">
+    <div class="admin-head">
+      <div class="admin-kicker">Collector</div>
+      <h1 class="admin-title">My purchases</h1>
+      <p class="admin-subtitle">All your orders in one place, with aging status and cellar time.</p>
 
-                // date display
-                $rawDate = $p['purchase_at'] ?? '';
-                $dateText = $rawDate ? date('d/m/Y H:i', strtotime($rawDate)) : '-';
+      <div class="admin-actions" style="margin-top: 14px;">
+        <a class="btn btn-sm" href="<?= BASE_URL ?>/pages/wines.php">Continue shopping</a>
+      </div>
 
-                // Cellared time = time since purchase (bottle is assumed unopened)
-                $cellaredText = '-';
-                if (!empty($rawDate)) {
-                    try {
-                        $dt  = new DateTime($rawDate);
-                        $now = new DateTime();
-                        $diff = $dt->diff($now);
-
-                        if ($diff->y > 0) $cellaredText = $diff->y . "y " . $diff->m . "m";
-                        elseif ($diff->m > 0) $cellaredText = $diff->m . "m " . $diff->d . "d";
-                        else $cellaredText = $diff->d . "d";
-                    } catch (Exception $e) {
-                        $cellaredText = '-';
-                    }
-                }
-
-                // status display (only if column exists)
-                $statusClass = '';
-                $statusText = '';
-                if ($statusCol) {
-                    $st = (string)($p['purchase_status'] ?? '');
-                    switch ($st) {
-                        case 'pending':   $statusClass='status-pending';   $statusText='Pending'; break;
-                        case 'shipped':   $statusClass='status-shipped';   $statusText='On the way'; break;
-                        case 'delivered': $statusClass='status-delivered'; $statusText='Delivered'; break;
-                        case 'cancelled': $statusClass='status-cancelled'; $statusText='Cancelled'; break;
-                        default:          $statusClass='status-pending';   $statusText=h($st ?: '-'); break;
-                    }
-                }
-            ?>
-                <tr>
-                    <td><?= h($dateText) ?></td>
-                    <td>
-                        <?php if (!empty($p['image'])): ?>
-                            <img src="../img/wines/<?= h($p['image']) ?>"
-                                alt="<?= h($p['wine_name']) ?>"
-                                style="max-width:40px;height:auto;vertical-align:middle;margin-right:8px;">
-                        <?php endif; ?>
-                        <?= h($p['wine_name']) ?>
-                    </td>
-                    <td><?= (int)$qty ?></td>
-                    <td><?= h($p['wine_type']) ?></td>
-                    <td>
-                        <?php if (!empty($p['denomination_name'])): ?>
-                            <span class="badge-denominacion"><?= h(denomLabel($p['denomination_name'])) ?></span>
-                        <?php else: ?>
-                            -
-                        <?php endif; ?>
-                    </td>
-                    <td><?= h($p['vintage']) ?></td>
-                    <td><?= h($p['aging_status'] ?? 'Unknown') ?></td>
-                    <td><?= h($cellaredText) ?></td>
-                    <td><?= number_format($unit, 2) ?> €</td>
-                    <td><strong><?= number_format($sub, 2) ?> €</strong></td>
-                    <?php if ($statusCol): ?>
-                        <td><span class="<?= h($statusClass) ?>"><?= $statusText ?></span></td>
-                    <?php endif; ?>
-                </tr>
-            <?php endforeach; ?>
-            </tbody>
-        </table>
+      <?php if (!empty($purchases)): ?>
+        <div class="sales-stats" style="margin-top: 14px;">
+          <div class="sales-stat">
+            <div class="sales-stat__label">Orders</div>
+            <div class="sales-stat__value"><?= (int)$totalOrders ?></div>
+          </div>
+          <div class="sales-stat">
+            <div class="sales-stat__label">Bottles</div>
+            <div class="sales-stat__value"><?= (int)$totalBottles ?></div>
+          </div>
+          <div class="sales-stat">
+            <div class="sales-stat__label">Total spent</div>
+            <div class="sales-stat__value"><?= number_format($totalSpent, 2) ?> €</div>
+          </div>
+        </div>
+      <?php endif; ?>
     </div>
-<?php endif; ?>
 
-<p><a href="<?= BASE_URL ?>/pages/wines.php">Continue shopping</a></p>
+    <?php if (empty($purchases)): ?>
+      <div class="form-card">
+        <div class="section-head">
+          <h2 class="section-title">No purchases yet</h2>
+          <p class="section-subtitle">Browse wines and start building your cellar.</p>
+        </div>
+        <div class="form-actions">
+          <a class="btn" href="<?= BASE_URL ?>/pages/wines.php">Browse wines</a>
+        </div>
+      </div>
+    <?php else: ?>
+
+      <div class="table-wrap">
+        <table class="purchases-table">
+          <thead>
+            <tr>
+              <th>Date/Time</th>
+              <th>Wine</th>
+              <th class="cell-right">Qty</th>
+              <th>Type</th>
+              <th>Denomination</th>
+              <th>Vintage</th>
+              <th>Aging status</th>
+              <th>Cellared</th>
+              <th class="cell-right">Unit price</th>
+              <th class="cell-right">Subtotal</th>
+              <?php if ($statusCol): ?><th>Status</th><?php endif; ?>
+            </tr>
+          </thead>
+
+          <tbody>
+          <?php foreach ($purchases as $p):
+              $unit = (float)$p['unit_price'];
+              $qty  = (int)$p['quantity'];
+              $sub  = $unit * $qty;
+
+              $rawDate  = $p['purchase_at'] ?? '';
+              $dateText = $rawDate ? date('d/m/Y H:i', strtotime($rawDate)) : '-';
+
+              $cellaredText = '-';
+              if (!empty($rawDate)) {
+                  try {
+                      $dt  = new DateTime($rawDate);
+                      $now = new DateTime();
+                      $diff = $dt->diff($now);
+                      if ($diff->y > 0) $cellaredText = $diff->y . "y " . $diff->m . "m";
+                      elseif ($diff->m > 0) $cellaredText = $diff->m . "m " . $diff->d . "d";
+                      else $cellaredText = $diff->d . "d";
+                  } catch (Exception $e) { $cellaredText = '-'; }
+              }
+
+              // Status badge (if column exists)
+              $statusBadge = 'badge badge-ghost';
+              $statusText  = '';
+              if ($statusCol) {
+                  $st = strtolower(trim((string)($p['purchase_status'] ?? '')));
+                  $statusText = $st ?: '-';
+
+                  if (in_array($st, ['paid','delivered','confirmed'], true)) $statusBadge = 'badge badge-status--active';
+                  elseif (in_array($st, ['pending'], true)) $statusBadge = 'badge badge-status--needs';
+                  elseif (in_array($st, ['shipped','on the way'], true)) $statusBadge = 'badge badge-status--open';
+                  elseif (in_array($st, ['cancelled','canceled'], true)) $statusBadge = 'badge badge-status--inactive';
+              }
+          ?>
+            <tr>
+              <td class="cell-mono"><?= h($dateText) ?></td>
+
+              <td>
+                <div class="sale-wine">
+                  <?php if (!empty($p['image'])): ?>
+                    <img class="sale-wine__img"
+                         src="../img/wines/<?= h($p['image']) ?>"
+                         alt="<?= h($p['wine_name']) ?>">
+                  <?php else: ?>
+                    <div class="sale-wine__img sale-wine__img--empty">🍷</div>
+                  <?php endif; ?>
+
+                  <div>
+                    <div class="sale-wine__name"><?= h($p['wine_name']) ?></div>
+                  </div>
+                </div>
+              </td>
+
+              <td class="cell-right cell-mono"><?= (int)$qty ?></td>
+              <td><?= h($p['wine_type']) ?></td>
+
+              <td>
+                <?php if (!empty($p['denomination_name'])): ?>
+                  <span class="badge badge-denom"><?= h(denomLabel($p['denomination_name'])) ?></span>
+                <?php else: ?>
+                  –
+                <?php endif; ?>
+              </td>
+
+              <td class="cell-mono"><?= h($p['vintage']) ?></td>
+              <td><span class="badge badge-ghost"><?= h($p['aging_status'] ?? 'Unknown') ?></span></td>
+              <td class="cell-mono"><?= h($cellaredText) ?></td>
+              <td class="cell-right cell-mono"><?= number_format($unit, 2) ?> €</td>
+              <td class="cell-right cell-mono"><strong><?= number_format($sub, 2) ?> €</strong></td>
+
+              <?php if ($statusCol): ?>
+                <td><span class="<?= $statusBadge ?>"><?= h($statusText) ?></span></td>
+              <?php endif; ?>
+            </tr>
+          <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
+
+    <?php endif; ?>
+  </div>
+</section>
+
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>
