@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wine Cellar - Gestión de Bodega</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>🍷 Wine Cellar</h1>
+    <p>Sistema de Gestión de Bodega de Vinos</p>
+  </header>
+
+  <nav>
+    <button class="nav-btn active" data-section="collectors">Coleccionistas</button>
+    <button class="nav-btn" data-section="sommeliers">Sommeliers</button>
+    <button class="nav-btn" data-section="bottles">Botellas</button>
+    <button class="nav-btn" data-section="aging">Envejecimiento</button>
+    <button class="nav-btn" data-section="tastings">Catas</button>
+  </nav>
+
+  <main>
+    <!-- Collectors Section -->
+    <section id="collectors" class="section active">
+      <div class="section-header">
+        <h2>Coleccionistas</h2>
+        <button class="btn-primary" onclick="showModal('collector')">+ Nuevo Coleccionista</button>
+      </div>
+      <div id="collectors-list" class="list-container"></div>
+    </section>
+
+    <!-- Sommeliers Section -->
+    <section id="sommeliers" class="section">
+      <div class="section-header">
+        <h2>Sommeliers Certificados</h2>
+        <button class="btn-primary" onclick="showModal('sommelier')">+ Nuevo Sommelier</button>
+      </div>
+      <div id="sommeliers-list" class="list-container"></div>
+    </section>
+
+    <!-- Bottles Section -->
+    <section id="bottles" class="section">
+      <div class="section-header">
+        <h2>Botellas</h2>
+        <div class="filter-container">
+          <label for="denomination-filter">Filtrar por denominación:</label>
+          <select id="denomination-filter" onchange="filterBottles()">
+            <option value="">Todas</option>
+            <option value="DOCG">DOCG</option>
+            <option value="DOC">DOC</option>
+            <option value="IGT">IGT</option>
+            <option value="organic">Orgánico</option>
+          </select>
+        </div>
+        <button class="btn-primary" onclick="showModal('bottle')">+ Nueva Botella</button>
+      </div>
+      <div id="bottles-list" class="list-container"></div>
+    </section>
+
+    <!-- Aging Section -->
+    <section id="aging" class="section">
+      <div class="section-header">
+        <h2>Registros de Envejecimiento</h2>
+        <button class="btn-primary" onclick="showModal('aging')">+ Nuevo Registro</button>
+      </div>
+      <div id="aging-list" class="list-container"></div>
+    </section>
+
+    <!-- Tastings Section -->
+    <section id="tastings" class="section">
+      <div class="section-header">
+        <h2>Catas</h2>
+        <button class="btn-primary" onclick="showModal('tasting')">+ Nueva Cata</button>
+      </div>
+      <div id="tastings-list" class="list-container"></div>
+    </section>
+  </main>
+
+  <!-- Modal for forms -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModal()">&times;</span>
+      <h3 id="modal-title"></h3>
+      <form id="modal-form"></form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
